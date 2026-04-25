@@ -24,6 +24,7 @@ export type YieldResponse = {
     problem: string;
     solution: string;
     value: string;
+    ml_usecase: string;
   };
   kpis: {
     model_confidence_pct: number;

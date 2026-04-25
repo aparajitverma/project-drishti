@@ -76,6 +76,7 @@ def yield_data(hours: int = 24) -> dict:
             "problem": "Lab-confirmed yield quality arrives late, so furnace tuning decisions are delayed and margin leaks shift-by-shift.",
             "solution": "Soft Sensor predicts Diesel/Petrol quality every cycle and links operational levers to expected economic impact for faster action.",
             "value": "Improves gross margin capture, reduces giveaway, and gives executives auditable evidence of AI-assisted optimization.",
+            "ml_usecase": "Multi-variable soft sensors utilize ensemble ML techniques to infer final blend quality from intermediate thermal streams."
         },
         "kpis": {
             "model_confidence_pct": round(avg_confidence, 1),
@@ -309,7 +310,7 @@ def realtime_monitoring_data() -> dict:
             "message": "Elevated compressor vibration detected",
             "timestamp": now.isoformat()
         })
-    if current_sensors["data_latency_seconds"] > 6:
+    if system_health["data_latency_seconds"] > 6:
         alerts.append({
             "level": "warning",
             "message": "Data latency higher than expected",
@@ -411,7 +412,7 @@ def flare_data() -> dict:
     last_pressure = float(df["upstream_pressure"].iloc[-1])
 
     forecast_minutes = list(range(0, 31, 5))
-    forecast_values = [round(current_flare + (m * 1.6) + (last_pressure - 4.8) * 40, 2) for m in forecast_minutes]
+    forecast_values = [round(current_flare + (m * 1.6) + (last_pressure - 4.8) * 40 * (m / 30.0), 2) for m in forecast_minutes]
     start = df["timestamp"].iloc[-1]
     forecast_timestamps = [(start + timedelta(minutes=m)).isoformat() for m in forecast_minutes]
 

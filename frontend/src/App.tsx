@@ -174,7 +174,7 @@ function App() {
     const new_current = Math.max(0, flareData.current_flare - valve_reduction + pressure_increase);
     
     const updatedForecast = flareData.forecast.map((pt, i) => {
-       const time_factor = 1 + (i * 0.05);
+       const time_factor = (i / 6.0);
        return { ...pt, flare_predicted: Math.max(0, pt.flare_predicted - (valve_reduction * time_factor) + (pressure_increase * time_factor)) };
     });
 
@@ -260,6 +260,10 @@ function App() {
                   <div className="psv-card value">
                     <h4>Value</h4>
                     <p>{yieldData.problem_solution_value.value}</p>
+                  </div>
+                  <div className="psv-card ai-impact">
+                    <h4>AI/ML Impact</h4>
+                    <p>{yieldData.problem_solution_value.ml_usecase}</p>
                   </div>
                 </div>
 
@@ -832,16 +836,16 @@ function App() {
               </div>
             </div>
 
-            <div className="viz-grid">
+            <div className="viz-grid" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
               <div className="viz-card">
-                <h4>Profit Surface Heat Map</h4>
+                <h4>Profit Surface Contour Map</h4>
                 <Plot
                   data={[
                     {
                       z: advancedVizData.heat_map.profit_surface,
                       x: advancedVizData.heat_map.furnace_temps,
                       y: advancedVizData.heat_map.column_pressures,
-                      type: 'heatmap',
+                      type: 'contour',
                       colorscale: [
                         [0, '#2E4057'],
                         [0.25, '#048A81'],
@@ -849,6 +853,12 @@ function App() {
                         [0.75, '#8FC93A'],
                         [1, '#F18F01']
                       ],
+                      contours: {
+                        coloring: 'heatmap',
+                        showlabels: true,
+                        labelfont: { size: 12, color: 'white' }
+                      },
+                      line: { smoothing: 0.85 },
                       colorbar: {
                         title: { text: "Profit Margin (%)", side: "right" }
                       }
@@ -864,29 +874,26 @@ function App() {
                       remove: ['select2d', 'lasso2d']
                     }
                   }}
-                  style={{ width: "100%" }}
+                  useResizeHandler={true}
+                  style={{ width: "100%", height: "100%" }}
                 />
               </div>
 
               <div className="viz-card">
-                <h4>3D Quality Surface</h4>
+                <h4>3D Quality Response Surface</h4>
                 <Plot
                   data={[
                     {
                       x: advancedVizData.surface_3d.map(d => d.furnace_temp),
                       y: advancedVizData.surface_3d.map(d => d.column_pressure),
                       z: advancedVizData.surface_3d.map(d => d.diesel_quality),
-                      type: 'scatter3d',
-                      mode: 'markers',
-                      marker: {
-                        size: 5,
-                        color: advancedVizData.surface_3d.map(d => d.diesel_quality),
-                        colorscale: 'Viridis',
-                        showscale: true,
-                        colorbar: { title: { text: "Diesel Quality" } }
-                      },
-                      name: "Diesel Quality"
-                    },
+                      type: 'mesh3d',
+                      opacity: 0.8,
+                      intensity: advancedVizData.surface_3d.map(d => d.diesel_quality),
+                      colorscale: 'Viridis',
+                      name: "Diesel Quality Surface",
+                      hoverinfo: "x+y+z+name"
+                    } as any,
                     {
                       x: advancedVizData.surface_3d.map(d => d.furnace_temp),
                       y: advancedVizData.surface_3d.map(d => d.column_pressure),
@@ -894,29 +901,38 @@ function App() {
                       type: 'scatter3d',
                       mode: 'markers',
                       marker: {
-                        size: 5,
+                        size: 6,
                         color: advancedVizData.surface_3d.map(d => d.petrol_quality),
                         colorscale: 'Plasma',
                         showscale: true,
-                        colorbar: { title: { text: "Petrol Quality" } }
+                        opacity: 0.9,
+                        line: { width: 1, color: 'white' },
+                        colorbar: { title: { text: "Petrol Quality" }, x: -0.15 }
                       },
-                      name: "Petrol Quality"
+                      name: "Petrol Quality Points",
+                      hoverinfo: "x+y+z+name"
                     }
                   ]}
                   layout={{
-                    title: { text: "Quality Response Surface" },
+                    title: { text: "Advanced Quality Topology" },
                     scene: {
                       xaxis: { title: { text: "Furnace Temp (°C)" } },
                       yaxis: { title: { text: "Pressure (bar)" } },
-                      zaxis: { title: { text: "Quality Index" } }
+                      zaxis: { title: { text: "Quality Index" } },
+                      camera: {
+                        eye: { x: 1.6, y: 1.6, z: 1.2 }
+                      }
                     },
-                    height: 400,
-                    dragmode: false,
+                    margin: { l: 20, r: 150, b: 20, t: 50 },
+                    legend: { title: { text: 'Key' }, x: 1.05, y: 0.6 },
+                    height: 550,
+                    dragmode: "turntable",
                     modebar: {
                       remove: ['select2d', 'lasso2d']
                     }
                   }}
-                  style={{ width: "100%" }}
+                  useResizeHandler={true}
+                  style={{ width: "100%", height: "100%" }}
                 />
               </div>
             </div>
