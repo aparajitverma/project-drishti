@@ -43,7 +43,56 @@ const getViridisColor = (val: number, min = 88, max = 94) => {
   }
 };
 
+const Login = ({ onLogin }: { onLogin: () => void }) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username === "Raygain" && password === "!Raygain@123") {
+      onLogin();
+    } else {
+      setError("Invalid administrative credentials");
+    }
+  };
+
+  return (
+    <div className="login-container">
+      <div className="login-box">
+        <h1>Project DRISHTI</h1>
+        <h3>Digital Refinery Intelligence & Safety Holistic Tracking Initiative</h3>
+        <p className="login-desc">
+          An advanced AI/ML-driven full-stack simulation dashboard designed to provide actionable intelligence, optimize process yield, enforce process safety, and track Environmental, Social, and Governance (ESG) compliance.
+        </p>
+
+        <form onSubmit={handleLogin}>
+          <input
+            type="text"
+            placeholder="Admin ID"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+          />
+          {error && <p className="error-text">{error}</p>}
+          <button type="submit">Initialize System</button>
+        </form>
+      </div>
+      <div className="powered-by">
+        <span>Powered by:</span>
+        <img src="/logo.webp" alt="Raygain Logo" />
+      </div>
+    </div>
+  );
+};
+
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeModule, setActiveModule] = useState<ModuleKey>("Yield Optimizer");
   const [activeYieldTab, setActiveYieldTab] = useState<YieldOptimizerTab>("optimization");
   const [yieldData, setYieldData] = useState<YieldResponse | null>(null);
@@ -92,7 +141,7 @@ function App() {
   const margin = useMemo(() => {
     if (!yieldData) return 0;
     let totalMargin = yieldData.base_profit_margin + yieldData.profit_per_degree * furnaceDelta;
-    
+
     // Add profit lever impacts
     if (yieldData.profit_levers) {
       totalMargin += profitLevers.furnace_temp * yieldData.profit_levers.furnace_temp.impact_per_unit;
@@ -100,7 +149,7 @@ function App() {
       totalMargin += profitLevers.reflux_ratio * yieldData.profit_levers.reflux_ratio.impact_per_unit;
       totalMargin += profitLevers.feed_flow_rate * yieldData.profit_levers.feed_flow_rate.impact_per_unit;
     }
-    
+
     return totalMargin;
   }, [yieldData, furnaceDelta, profitLevers]);
 
@@ -161,10 +210,10 @@ function App() {
     });
 
     const updatedHistory = maintenanceData.degradation_history.map(pt => {
-        return {
-           ...pt,
-           rul_predicted: Math.max(0, pt.rul_predicted - (pump_load_pct * 3) - (cooling_temp * 2))
-        };
+      return {
+        ...pt,
+        rul_predicted: Math.max(0, pt.rul_predicted - (pump_load_pct * 3) - (cooling_temp * 2))
+      };
     });
 
     return { assets: updatedAssets, history: updatedHistory };
@@ -174,9 +223,9 @@ function App() {
     if (!benzeneData) return null;
     const { steam_flow_pct, ambient_offset } = benzeneLevers;
     const updatedSegments = benzeneData.segments.map(seg => {
-       const new_ambient = seg.ambient_temp + ambient_offset;
-       const new_surface = seg.surface_temp + ambient_offset + (steam_flow_pct * 0.05);
-       return { ...seg, ambient_temp: Number(new_ambient.toFixed(2)), surface_temp: Number(new_surface.toFixed(2)), risk: new_surface <= benzeneData.threshold ? "High" : "Normal" };
+      const new_ambient = seg.ambient_temp + ambient_offset;
+      const new_surface = seg.surface_temp + ambient_offset + (steam_flow_pct * 0.05);
+      return { ...seg, ambient_temp: Number(new_ambient.toFixed(2)), surface_temp: Number(new_surface.toFixed(2)), risk: new_surface <= benzeneData.threshold ? "High" : "Normal" };
     });
     return { segments: updatedSegments };
   }, [benzeneData, benzeneLevers]);
@@ -184,29 +233,33 @@ function App() {
   const dynamicFlare = useMemo(() => {
     if (!flareData) return null;
     const { recycle_valve, upstream_pressure_offset } = flareLevers;
-    
-    const valve_reduction = recycle_valve * 1.2; 
+
+    const valve_reduction = recycle_valve * 1.2;
     const pressure_increase = upstream_pressure_offset * 40;
 
     const new_current = Math.max(0, flareData.current_flare - valve_reduction + pressure_increase);
-    
+
     const updatedForecast = flareData.forecast.map((pt, i) => {
-       const time_factor = (i / 6.0);
-       return { ...pt, flare_predicted: Math.max(0, pt.flare_predicted - (valve_reduction * time_factor) + (pressure_increase * time_factor)) };
+      const time_factor = (i / 6.0);
+      return { ...pt, flare_predicted: Math.max(0, pt.flare_predicted - (valve_reduction * time_factor) + (pressure_increase * time_factor)) };
     });
 
     let sources = [...flareData.sources];
     if (recycle_valve > 0) {
-        sources = sources.map(s => {
-            if (s.source === "Unit A Relief" || s.source === "Unit B Purge") {
-               return { ...s, volume_pct: Math.max(5, s.volume_pct - (recycle_valve * 0.1)) };
-            }
-            return s;
-        });
+      sources = sources.map(s => {
+        if (s.source === "Unit A Relief" || s.source === "Unit B Purge") {
+          return { ...s, volume_pct: Math.max(5, s.volume_pct - (recycle_valve * 0.1)) };
+        }
+        return s;
+      });
     }
 
     return { current_flare: new_current, forecast: updatedForecast, sources };
   }, [flareData, flareLevers]);
+
+  if (!isAuthenticated) {
+    return <Login onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div className="app-shell">
@@ -223,8 +276,12 @@ function App() {
             {module}
           </button>
         ))}
-        <button className="download-btn" type="button">
-          Download Executive PDF Report
+        <button
+          className="nav-btn logout-btn"
+          type="button"
+          onClick={() => setIsAuthenticated(false)}
+        >
+          Logout
         </button>
       </aside>
       <main className="content">
@@ -235,27 +292,27 @@ function App() {
               <span>Mini Project #1</span>
               <strong>AI Yield Optimization Cockpit</strong>
             </div>
-            
+
             <div className="yield-tabs">
-              <button 
+              <button
                 className={activeYieldTab === "optimization" ? "active" : ""}
                 onClick={() => setActiveYieldTab("optimization")}
               >
                 Optimization Control
               </button>
-              <button 
+              <button
                 className={activeYieldTab === "batch-comparison" ? "active" : ""}
                 onClick={() => setActiveYieldTab("batch-comparison")}
               >
                 Batch Analysis
               </button>
-              <button 
+              <button
                 className={activeYieldTab === "realtime-monitoring" ? "active" : ""}
                 onClick={() => setActiveYieldTab("realtime-monitoring")}
               >
                 Real-time Monitor
               </button>
-              <button 
+              <button
                 className={activeYieldTab === "advanced-viz" ? "active" : ""}
                 onClick={() => setActiveYieldTab("advanced-viz")}
               >
@@ -284,244 +341,244 @@ function App() {
                   </div>
                 </div>
 
-            <div className="kpi-grid">
-              <div className="kpi-card">
-                <p>Model Confidence</p>
-                <strong>{yieldData.kpis.model_confidence_pct}%</strong>
-              </div>
-              <div className="kpi-card">
-                <p>
-                  Diesel Pred-Lab Gap
-                  <span
-                    className="hint"
-                    title="Average absolute difference between soft-sensor diesel prediction and lab result over 24h. Lower is better."
-                  >
-                    i
-                  </span>
-                </p>
-                <strong>{yieldData.kpis.diesel_gap_avg}</strong>
-              </div>
-              <div className="kpi-card">
-                <p>
-                  Petrol Pred-Lab Gap
-                  <span
-                    className="hint"
-                    title="Average absolute difference between soft-sensor petrol prediction and lab result over 24h. Lower is better."
-                  >
-                    i
-                  </span>
-                </p>
-                <strong>{yieldData.kpis.petrol_gap_avg}</strong>
-              </div>
-              <div className="kpi-card uplift">
-                <p>Potential Daily Uplift</p>
-                <strong>INR {yieldData.kpis.estimated_daily_uplift_inr_lakh} Lakh</strong>
-              </div>
-            </div>
+                <div className="kpi-grid">
+                  <div className="kpi-card">
+                    <p>Model Confidence</p>
+                    <strong>{yieldData.kpis.model_confidence_pct}%</strong>
+                  </div>
+                  <div className="kpi-card">
+                    <p>
+                      Diesel Pred-Lab Gap
+                      <span
+                        className="hint"
+                        title="Average absolute difference between soft-sensor diesel prediction and lab result over 24h. Lower is better."
+                      >
+                        i
+                      </span>
+                    </p>
+                    <strong>{yieldData.kpis.diesel_gap_avg}</strong>
+                  </div>
+                  <div className="kpi-card">
+                    <p>
+                      Petrol Pred-Lab Gap
+                      <span
+                        className="hint"
+                        title="Average absolute difference between soft-sensor petrol prediction and lab result over 24h. Lower is better."
+                      >
+                        i
+                      </span>
+                    </p>
+                    <strong>{yieldData.kpis.petrol_gap_avg}</strong>
+                  </div>
+                  <div className="kpi-card uplift">
+                    <p>Potential Daily Uplift</p>
+                    <strong>INR {yieldData.kpis.estimated_daily_uplift_inr_lakh} Lakh</strong>
+                  </div>
+                </div>
 
-            <Plot
-              data={[
-                {
-                  x: yieldData.timeseries.map((d) => d.timestamp),
-                  y: yieldData.timeseries.map((d) => d.diesel_pred),
-                  name: "Diesel Predicted",
-                  type: "scatter",
-                  mode: "lines",
-                  line: { color: IOCL_BLUE, width: 3 },
-                },
-                {
-                  x: yieldData.timeseries.map((d) => d.timestamp),
-                  y: yieldData.timeseries.map((d) => d.diesel_lab),
-                  name: "Diesel Lab",
-                  type: "scatter",
-                  mode: "lines+markers",
-                  line: { color: IOCL_SAFFRON, dash: "dot" },
-                },
-                {
-                  x: yieldData.timeseries.map((d) => d.timestamp),
-                  y: yieldData.timeseries.map((d) => d.petrol_pred),
-                  name: "Petrol Predicted",
-                  type: "scatter",
-                  mode: "lines",
-                  line: { color: "#4C78A8", width: 2 },
-                },
-                {
-                  x: yieldData.timeseries.map((d) => d.timestamp),
-                  y: yieldData.timeseries.map((d) => d.petrol_lab),
-                  name: "Petrol Lab",
-                  type: "scatter",
-                  mode: "lines+markers",
-                  line: { color: "#F58518", dash: "dot" },
-                },
-              ]}
-              layout={{
-                title: { text: "Soft Sensor Feed: Predicted vs Lab Results" },
-                paper_bgcolor: "white",
-                plot_bgcolor: "white",
-                yaxis: { title: { text: "Yield Quality Index" } },
-                height: 450,
-                dragmode: false,
-                modebar: {
-                  remove: ['select2d', 'lasso2d']
-                }
-              }}
-              style={{ width: "100%" }}
-            />
-            <p className="axis-note">
-              Y-axis: Yield Quality Index
-              <span
-                className="hint"
-                title="Composite quality indicator derived from relevant product quality predictors. It is dimensionless and used for relative optimization."
-              >
-                i
-              </span>
-            </p>
-            <div className="time-range-selector">
-              <h4>Time Range Analysis</h4>
-              <div className="time-range-buttons">
-                <button 
-                  className={timeRange === 24 ? "active" : ""}
-                  onClick={() => setTimeRange(24)}
-                >
-                  Last 24h
-                </button>
-                <button 
-                  className={timeRange === 168 ? "active" : ""}
-                  onClick={() => setTimeRange(168)}
-                >
-                  Last 7 days
-                </button>
-                <button 
-                  className={timeRange === 720 ? "active" : ""}
-                  onClick={() => setTimeRange(720)}
-                >
-                  Last 30 days
-                </button>
-              </div>
-              <p className="data-points">
-                Showing {yieldData?.timeseries.length} data points
-              </p>
-            </div>
-            <div className="profit-levers-panel">
-              <h4>Multi-Lever Optimization Control</h4>
-              <div className="levers-grid">
-                <div className="lever-control">
-                  <label htmlFor="furnace-temp">
-                    Furnace Temp Delta ({furnaceDelta}°C)
-                    <span className="hint" title="Higher temperature improves conversion but increases energy cost">
-                      i
-                    </span>
-                  </label>
-                  <input
-                    id="furnace-temp"
-                    type="range"
-                    min={yieldData.tuning_model.slider_min}
-                    max={yieldData.tuning_model.slider_max}
-                    step={1}
-                    value={furnaceDelta}
-                    onChange={(e) => setFurnaceDelta(Number(e.target.value))}
-                  />
-                  <span className="lever-value">Δ{furnaceDelta}°C</span>
+                <Plot
+                  data={[
+                    {
+                      x: yieldData.timeseries.map((d) => d.timestamp),
+                      y: yieldData.timeseries.map((d) => d.diesel_pred),
+                      name: "Diesel Predicted",
+                      type: "scatter",
+                      mode: "lines",
+                      line: { color: IOCL_BLUE, width: 3 },
+                    },
+                    {
+                      x: yieldData.timeseries.map((d) => d.timestamp),
+                      y: yieldData.timeseries.map((d) => d.diesel_lab),
+                      name: "Diesel Lab",
+                      type: "scatter",
+                      mode: "lines+markers",
+                      line: { color: IOCL_SAFFRON, dash: "dot" },
+                    },
+                    {
+                      x: yieldData.timeseries.map((d) => d.timestamp),
+                      y: yieldData.timeseries.map((d) => d.petrol_pred),
+                      name: "Petrol Predicted",
+                      type: "scatter",
+                      mode: "lines",
+                      line: { color: "#4C78A8", width: 2 },
+                    },
+                    {
+                      x: yieldData.timeseries.map((d) => d.timestamp),
+                      y: yieldData.timeseries.map((d) => d.petrol_lab),
+                      name: "Petrol Lab",
+                      type: "scatter",
+                      mode: "lines+markers",
+                      line: { color: "#F58518", dash: "dot" },
+                    },
+                  ]}
+                  layout={{
+                    title: { text: "Soft Sensor Feed: Predicted vs Lab Results" },
+                    paper_bgcolor: "white",
+                    plot_bgcolor: "white",
+                    yaxis: { title: { text: "Yield Quality Index" } },
+                    height: 450,
+                    dragmode: false,
+                    modebar: {
+                      remove: ['select2d', 'lasso2d']
+                    }
+                  }}
+                  style={{ width: "100%" }}
+                />
+                <p className="axis-note">
+                  Y-axis: Yield Quality Index
+                  <span
+                    className="hint"
+                    title="Composite quality indicator derived from relevant product quality predictors. It is dimensionless and used for relative optimization."
+                  >
+                    i
+                  </span>
+                </p>
+                <div className="time-range-selector">
+                  <h4>Time Range Analysis</h4>
+                  <div className="time-range-buttons">
+                    <button
+                      className={timeRange === 24 ? "active" : ""}
+                      onClick={() => setTimeRange(24)}
+                    >
+                      Last 24h
+                    </button>
+                    <button
+                      className={timeRange === 168 ? "active" : ""}
+                      onClick={() => setTimeRange(168)}
+                    >
+                      Last 7 days
+                    </button>
+                    <button
+                      className={timeRange === 720 ? "active" : ""}
+                      onClick={() => setTimeRange(720)}
+                    >
+                      Last 30 days
+                    </button>
+                  </div>
+                  <p className="data-points">
+                    Showing {yieldData?.timeseries.length} data points
+                  </p>
                 </div>
-                
-                {yieldData.profit_levers && (
-                  <>
+                <div className="profit-levers-panel">
+                  <h4>Multi-Lever Optimization Control</h4>
+                  <div className="levers-grid">
                     <div className="lever-control">
-                      <label htmlFor="pressure">
-                        Column Pressure ({profitLevers.column_pressure > 0 ? '+' : ''}{profitLevers.column_pressure} bar)
-                        <span className="hint" title={yieldData.profit_levers.column_pressure.description}>
+                      <label htmlFor="furnace-temp">
+                        Furnace Temp Delta ({furnaceDelta}°C)
+                        <span className="hint" title="Higher temperature improves conversion but increases energy cost">
                           i
                         </span>
                       </label>
                       <input
-                        id="pressure"
+                        id="furnace-temp"
                         type="range"
-                        min={-0.6}
-                        max={0.7}
-                        step={0.1}
-                        value={profitLevers.column_pressure}
-                        onChange={(e) => setProfitLevers(prev => ({...prev, column_pressure: Number(e.target.value)}))}
+                        min={yieldData.tuning_model.slider_min}
+                        max={yieldData.tuning_model.slider_max}
+                        step={1}
+                        value={furnaceDelta}
+                        onChange={(e) => setFurnaceDelta(Number(e.target.value))}
                       />
-                      <span className="lever-value">{(yieldData.profit_levers.column_pressure.current + profitLevers.column_pressure).toFixed(1)} bar</span>
+                      <span className="lever-value">Δ{furnaceDelta}°C</span>
                     </div>
-                    
-                    <div className="lever-control">
-                      <label htmlFor="reflux">
-                        Reflux Ratio ({profitLevers.reflux_ratio > 0 ? '+' : ''}{profitLevers.reflux_ratio})
-                        <span className="hint" title={yieldData.profit_levers.reflux_ratio.description}>
-                          i
-                        </span>
-                      </label>
-                      <input
-                        id="reflux"
-                        type="range"
-                        min={-0.7}
-                        max={0.7}
-                        step={0.1}
-                        value={profitLevers.reflux_ratio}
-                        onChange={(e) => setProfitLevers(prev => ({...prev, reflux_ratio: Number(e.target.value)}))}
-                      />
-                      <span className="lever-value">{(yieldData.profit_levers.reflux_ratio.current + profitLevers.reflux_ratio).toFixed(1)}</span>
+
+                    {yieldData.profit_levers && (
+                      <>
+                        <div className="lever-control">
+                          <label htmlFor="pressure">
+                            Column Pressure ({profitLevers.column_pressure > 0 ? '+' : ''}{profitLevers.column_pressure} bar)
+                            <span className="hint" title={yieldData.profit_levers.column_pressure.description}>
+                              i
+                            </span>
+                          </label>
+                          <input
+                            id="pressure"
+                            type="range"
+                            min={-0.6}
+                            max={0.7}
+                            step={0.1}
+                            value={profitLevers.column_pressure}
+                            onChange={(e) => setProfitLevers(prev => ({ ...prev, column_pressure: Number(e.target.value) }))}
+                          />
+                          <span className="lever-value">{(yieldData.profit_levers.column_pressure.current + profitLevers.column_pressure).toFixed(1)} bar</span>
+                        </div>
+
+                        <div className="lever-control">
+                          <label htmlFor="reflux">
+                            Reflux Ratio ({profitLevers.reflux_ratio > 0 ? '+' : ''}{profitLevers.reflux_ratio})
+                            <span className="hint" title={yieldData.profit_levers.reflux_ratio.description}>
+                              i
+                            </span>
+                          </label>
+                          <input
+                            id="reflux"
+                            type="range"
+                            min={-0.7}
+                            max={0.7}
+                            step={0.1}
+                            value={profitLevers.reflux_ratio}
+                            onChange={(e) => setProfitLevers(prev => ({ ...prev, reflux_ratio: Number(e.target.value) }))}
+                          />
+                          <span className="lever-value">{(yieldData.profit_levers.reflux_ratio.current + profitLevers.reflux_ratio).toFixed(1)}</span>
+                        </div>
+
+                        <div className="lever-control">
+                          <label htmlFor="flow">
+                            Feed Flow Rate ({profitLevers.feed_flow_rate > 0 ? '+' : ''}{profitLevers.feed_flow_rate} m³/h)
+                            <span className="hint" title={yieldData.profit_levers.feed_flow_rate.description}>
+                              i
+                            </span>
+                          </label>
+                          <input
+                            id="flow"
+                            type="range"
+                            min={-100}
+                            max={100}
+                            step={10}
+                            value={profitLevers.feed_flow_rate}
+                            onChange={(e) => setProfitLevers(prev => ({ ...prev, feed_flow_rate: Number(e.target.value) }))}
+                          />
+                          <span className="lever-value">{(yieldData.profit_levers.feed_flow_rate.current + profitLevers.feed_flow_rate)} m³/h</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div className="metric">Total Gross Profit Margin: {margin.toFixed(2)}%</div>
+                </div>
+                {yieldDynamics && (
+                  <div className="risk-grid">
+                    <div className="kpi-card">
+                      <p>Energy Penalty</p>
+                      <strong>-{yieldDynamics.energyPenalty.toFixed(2)}%</strong>
                     </div>
-                    
-                    <div className="lever-control">
-                      <label htmlFor="flow">
-                        Feed Flow Rate ({profitLevers.feed_flow_rate > 0 ? '+' : ''}{profitLevers.feed_flow_rate} m³/h)
-                        <span className="hint" title={yieldData.profit_levers.feed_flow_rate.description}>
-                          i
-                        </span>
-                      </label>
-                      <input
-                        id="flow"
-                        type="range"
-                        min={-100}
-                        max={100}
-                        step={10}
-                        value={profitLevers.feed_flow_rate}
-                        onChange={(e) => setProfitLevers(prev => ({...prev, feed_flow_rate: Number(e.target.value)}))}
-                      />
-                      <span className="lever-value">{(yieldData.profit_levers.feed_flow_rate.current + profitLevers.feed_flow_rate)} m³/h</span>
+                    <div className="kpi-card">
+                      <p>Off-Spec Risk</p>
+                      <strong>{yieldDynamics.offspecRisk.toFixed(1)}%</strong>
                     </div>
-                  </>
+                    <div className="kpi-card">
+                      <p>Heater Trip/Coking Risk</p>
+                      <strong>{yieldDynamics.tripRisk.toFixed(1)}%</strong>
+                    </div>
+                    <div className={`kpi-card ${yieldDynamics.zone === "High Risk" ? "risk-high" : yieldDynamics.zone === "Caution" ? "risk-caution" : "risk-safe"}`}>
+                      <p>Operating Zone</p>
+                      <strong>{yieldDynamics.zone}</strong>
+                    </div>
+                    <div className="kpi-card uplift">
+                      <p>Net Margin (Risk Adjusted)</p>
+                      <strong>{yieldDynamics.netMargin.toFixed(2)}%</strong>
+                    </div>
+                  </div>
                 )}
-              </div>
-              <div className="metric">Total Gross Profit Margin: {margin.toFixed(2)}%</div>
-            </div>
-            {yieldDynamics && (
-              <div className="risk-grid">
-                <div className="kpi-card">
-                  <p>Energy Penalty</p>
-                  <strong>-{yieldDynamics.energyPenalty.toFixed(2)}%</strong>
-                </div>
-                <div className="kpi-card">
-                  <p>Off-Spec Risk</p>
-                  <strong>{yieldDynamics.offspecRisk.toFixed(1)}%</strong>
-                </div>
-                <div className="kpi-card">
-                  <p>Heater Trip/Coking Risk</p>
-                  <strong>{yieldDynamics.tripRisk.toFixed(1)}%</strong>
-                </div>
-                <div className={`kpi-card ${yieldDynamics.zone === "High Risk" ? "risk-high" : yieldDynamics.zone === "Caution" ? "risk-caution" : "risk-safe"}`}>
-                  <p>Operating Zone</p>
-                  <strong>{yieldDynamics.zone}</strong>
-                </div>
-                <div className="kpi-card uplift">
-                  <p>Net Margin (Risk Adjusted)</p>
-                  <strong>{yieldDynamics.netMargin.toFixed(2)}%</strong>
-                </div>
-              </div>
-            )}
-            {yieldDynamics && (
-              <div className="recommendation-card">
-                <h4>Executive Recommendations (Dynamic)</h4>
-                <ul>
-                  {yieldDynamics.recommendations.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div className="recommendation-card">
+                {yieldDynamics && (
+                  <div className="recommendation-card">
+                    <h4>Executive Recommendations (Dynamic)</h4>
+                    <ul>
+                      {yieldDynamics.recommendations.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="recommendation-card">
                   <h4>Base Operating Recommendations</h4>
                   <ul>
                     {yieldData.recommended_actions.map((item) => (
@@ -539,148 +596,148 @@ function App() {
                   <span>Mini Project #2</span>
                   <strong>Historical Batch Performance Intelligence</strong>
                 </div>
-            
-            <div className="batch-summary-grid">
-              <div className="kpi-card">
-                <p>Total Batches Analyzed</p>
-                <strong>{batchData.summary.total_batches}</strong>
-              </div>
-              <div className="kpi-card">
-                <p>Average Profit Margin</p>
-                <strong>{batchData.summary.avg_profit_margin}%</strong>
-              </div>
-              <div className="kpi-card">
-                <p>Average Efficiency</p>
-                <strong>{batchData.summary.avg_efficiency}%</strong>
-              </div>
-              <div className="kpi-card">
-                <p>Off-Spec Incidents</p>
-                <strong>{batchData.summary.total_offspec_incidents}</strong>
-              </div>
-            </div>
 
-            <div className="grade-distribution">
-              <h4>Batch Grade Distribution</h4>
-              <div className="grade-bars">
-                <div className="grade-item">
-                  <span className="grade-label">Grade A</span>
-                  <div className="grade-bar">
-                    <div 
-                      className="grade-fill grade-a" 
-                      style={{width: `${(batchData.summary.grade_distribution.A / batchData.summary.total_batches) * 100}%`}}
-                    />
+                <div className="batch-summary-grid">
+                  <div className="kpi-card">
+                    <p>Total Batches Analyzed</p>
+                    <strong>{batchData.summary.total_batches}</strong>
                   </div>
-                  <span className="grade-count">{batchData.summary.grade_distribution.A}</span>
+                  <div className="kpi-card">
+                    <p>Average Profit Margin</p>
+                    <strong>{batchData.summary.avg_profit_margin}%</strong>
+                  </div>
+                  <div className="kpi-card">
+                    <p>Average Efficiency</p>
+                    <strong>{batchData.summary.avg_efficiency}%</strong>
+                  </div>
+                  <div className="kpi-card">
+                    <p>Off-Spec Incidents</p>
+                    <strong>{batchData.summary.total_offspec_incidents}</strong>
+                  </div>
                 </div>
-                <div className="grade-item">
-                  <span className="grade-label">Grade B</span>
-                  <div className="grade-bar">
-                    <div 
-                      className="grade-fill grade-b" 
-                      style={{width: `${(batchData.summary.grade_distribution.B / batchData.summary.total_batches) * 100}%`}}
-                    />
+
+                <div className="grade-distribution">
+                  <h4>Batch Grade Distribution</h4>
+                  <div className="grade-bars">
+                    <div className="grade-item">
+                      <span className="grade-label">Grade A</span>
+                      <div className="grade-bar">
+                        <div
+                          className="grade-fill grade-a"
+                          style={{ width: `${(batchData.summary.grade_distribution.A / batchData.summary.total_batches) * 100}%` }}
+                        />
+                      </div>
+                      <span className="grade-count">{batchData.summary.grade_distribution.A}</span>
+                    </div>
+                    <div className="grade-item">
+                      <span className="grade-label">Grade B</span>
+                      <div className="grade-bar">
+                        <div
+                          className="grade-fill grade-b"
+                          style={{ width: `${(batchData.summary.grade_distribution.B / batchData.summary.total_batches) * 100}%` }}
+                        />
+                      </div>
+                      <span className="grade-count">{batchData.summary.grade_distribution.B}</span>
+                    </div>
+                    <div className="grade-item">
+                      <span className="grade-label">Grade C</span>
+                      <div className="grade-bar">
+                        <div
+                          className="grade-fill grade-c"
+                          style={{ width: `${(batchData.summary.grade_distribution.C / batchData.summary.total_batches) * 100}%` }}
+                        />
+                      </div>
+                      <span className="grade-count">{batchData.summary.grade_distribution.C}</span>
+                    </div>
                   </div>
-                  <span className="grade-count">{batchData.summary.grade_distribution.B}</span>
                 </div>
-                <div className="grade-item">
-                  <span className="grade-label">Grade C</span>
-                  <div className="grade-bar">
-                    <div 
-                      className="grade-fill grade-c" 
-                      style={{width: `${(batchData.summary.grade_distribution.C / batchData.summary.total_batches) * 100}%`}}
-                    />
-                  </div>
-                  <span className="grade-count">{batchData.summary.grade_distribution.C}</span>
+
+                <Plot
+                  data={[
+                    {
+                      x: batchData.batches.map(b => b.batch_id),
+                      y: batchData.batches.map(b => b.profit_margin),
+                      name: "Profit Margin (%)",
+                      type: "bar",
+                      marker: {
+                        color: batchData.batches.map(b =>
+                          b.grade === "A" ? "#22a06b" : b.grade === "B" ? "#ff9933" : "#d62728"
+                        )
+                      },
+                    },
+                    {
+                      x: batchData.batches.map(b => b.batch_id),
+                      y: batchData.batches.map(b => b.efficiency),
+                      name: "Efficiency (%)",
+                      type: "scatter",
+                      mode: "lines+markers",
+                      line: { color: IOCL_BLUE, width: 2 },
+                      yaxis: "y2",
+                    },
+                  ]}
+                  layout={{
+                    title: { text: "Batch Performance Comparison" },
+                    paper_bgcolor: "white",
+                    plot_bgcolor: "white",
+                    xaxis: { title: { text: "Batch ID" } },
+                    yaxis: {
+                      title: { text: "Profit Margin (%)" },
+                      side: "left"
+                    },
+                    yaxis2: {
+                      title: { text: "Efficiency (%)" },
+                      side: "right",
+                      overlaying: "y"
+                    },
+                    height: 400,
+                    dragmode: false,
+                    modebar: {
+                      remove: ['select2d', 'lasso2d']
+                    }
+                  }}
+                  style={{ width: "100%" }}
+                />
+
+                <div className="batch-details-grid">
+                  {batchData.batches.map((batch) => (
+                    <div key={batch.batch_id} className={`batch-card grade-${batch.grade.toLowerCase()}`}>
+                      <div className="batch-header">
+                        <strong>{batch.batch_id}</strong>
+                        <span className={`grade-badge grade-${batch.grade.toLowerCase()}`}>{batch.grade}</span>
+                      </div>
+                      <div className="batch-metrics">
+                        <div className="metric-row">
+                          <span>Duration:</span>
+                          <strong>{batch.duration}h</strong>
+                        </div>
+                        <div className="metric-row">
+                          <span>Diesel Quality:</span>
+                          <strong>{batch.diesel_quality}</strong>
+                        </div>
+                        <div className="metric-row">
+                          <span>Petrol Quality:</span>
+                          <strong>{batch.petrol_quality}</strong>
+                        </div>
+                        <div className="metric-row">
+                          <span>Energy:</span>
+                          <strong>{batch.energy_consumption}</strong>
+                        </div>
+                      </div>
+                      {batch.offspec_incidents > 0 && (
+                        <div className="alert-text">Off-spec incidents: {batch.offspec_incidents}</div>
+                      )}
+                      <div className="batch-recommendations">
+                        <h5>Recommendations:</h5>
+                        <ul>
+                          {batch.recommendations.map((rec, idx) => (
+                            <li key={idx}>{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-
-            <Plot
-              data={[
-                {
-                  x: batchData.batches.map(b => b.batch_id),
-                  y: batchData.batches.map(b => b.profit_margin),
-                  name: "Profit Margin (%)",
-                  type: "bar",
-                  marker: { 
-                    color: batchData.batches.map(b => 
-                      b.grade === "A" ? "#22a06b" : b.grade === "B" ? "#ff9933" : "#d62728"
-                    )
-                  },
-                },
-                {
-                  x: batchData.batches.map(b => b.batch_id),
-                  y: batchData.batches.map(b => b.efficiency),
-                  name: "Efficiency (%)",
-                  type: "scatter",
-                  mode: "lines+markers",
-                  line: { color: IOCL_BLUE, width: 2 },
-                  yaxis: "y2",
-                },
-              ]}
-              layout={{
-                title: { text: "Batch Performance Comparison" },
-                paper_bgcolor: "white",
-                plot_bgcolor: "white",
-                xaxis: { title: { text: "Batch ID" } },
-                yaxis: { 
-                  title: { text: "Profit Margin (%)" },
-                  side: "left"
-                },
-                yaxis2: {
-                  title: { text: "Efficiency (%)" },
-                  side: "right",
-                  overlaying: "y"
-                },
-                height: 400,
-                dragmode: false,
-                modebar: {
-                  remove: ['select2d', 'lasso2d']
-                }
-              }}
-              style={{ width: "100%" }}
-            />
-
-            <div className="batch-details-grid">
-              {batchData.batches.map((batch) => (
-                <div key={batch.batch_id} className={`batch-card grade-${batch.grade.toLowerCase()}`}>
-                  <div className="batch-header">
-                    <strong>{batch.batch_id}</strong>
-                    <span className={`grade-badge grade-${batch.grade.toLowerCase()}`}>{batch.grade}</span>
-                  </div>
-                  <div className="batch-metrics">
-                    <div className="metric-row">
-                      <span>Duration:</span>
-                      <strong>{batch.duration}h</strong>
-                    </div>
-                    <div className="metric-row">
-                      <span>Diesel Quality:</span>
-                      <strong>{batch.diesel_quality}</strong>
-                    </div>
-                    <div className="metric-row">
-                      <span>Petrol Quality:</span>
-                      <strong>{batch.petrol_quality}</strong>
-                    </div>
-                    <div className="metric-row">
-                      <span>Energy:</span>
-                      <strong>{batch.energy_consumption}</strong>
-                    </div>
-                  </div>
-                  {batch.offspec_incidents > 0 && (
-                    <div className="alert-text">Off-spec incidents: {batch.offspec_incidents}</div>
-                  )}
-                  <div className="batch-recommendations">
-                    <h5>Recommendations:</h5>
-                    <ul>
-                      {batch.recommendations.map((rec, idx) => (
-                        <li key={idx}>{rec}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
             )}
 
             {activeYieldTab === "realtime-monitoring" && realtimeData && (
@@ -690,136 +747,136 @@ function App() {
                   <span>Mini Project #3</span>
                   <strong>Live Operations Intelligence Center</strong>
                 </div>
-            
-            <div className="system-health-bar">
-              <div className="health-indicator">
-                <span className="health-label">DCS Connectivity:</span>
-                <span className={`health-status ${realtimeData.system_health.dcs_connectivity}`}>
-                  {realtimeData.system_health.dcs_connectivity}
-                </span>
-              </div>
-              <div className="health-indicator">
-                <span className="health-label">Sensor Status:</span>
-                <span className={`health-status ${realtimeData.system_health.sensor_status}`}>
-                  {realtimeData.system_health.sensor_status}
-                </span>
-              </div>
-              <div className="health-indicator">
-                <span className="health-label">Uptime:</span>
-                <span className="health-status">{realtimeData.system_health.uptime_percentage}%</span>
-              </div>
-              <div className="health-indicator">
-                <span className="health-label">Last Update:</span>
-                <span className="health-status">
-                  {new Date(realtimeData.system_health.last_update).toLocaleTimeString()}
-                </span>
-              </div>
-            </div>
 
-            {realtimeData.active_alerts.length > 0 && (
-              <div className="alerts-panel">
-                <h4>Active Alerts</h4>
-                {realtimeData.active_alerts.map((alert, idx) => (
-                  <div key={idx} className={`alert-item ${alert.level}`}>
-                    <span className="alert-level">{alert.level.toUpperCase()}</span>
-                    <span className="alert-message">{alert.message}</span>
-                    <span className="alert-time">
-                      {new Date(alert.timestamp).toLocaleTimeString()}
+                <div className="system-health-bar">
+                  <div className="health-indicator">
+                    <span className="health-label">DCS Connectivity:</span>
+                    <span className={`health-status ${realtimeData.system_health.dcs_connectivity}`}>
+                      {realtimeData.system_health.dcs_connectivity}
                     </span>
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="health-indicator">
+                    <span className="health-label">Sensor Status:</span>
+                    <span className={`health-status ${realtimeData.system_health.sensor_status}`}>
+                      {realtimeData.system_health.sensor_status}
+                    </span>
+                  </div>
+                  <div className="health-indicator">
+                    <span className="health-label">Uptime:</span>
+                    <span className="health-status">{realtimeData.system_health.uptime_percentage}%</span>
+                  </div>
+                  <div className="health-indicator">
+                    <span className="health-label">Last Update:</span>
+                    <span className="health-status">
+                      {new Date(realtimeData.system_health.last_update).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
 
-            <div className="realtime-grid">
-              <div className="sensor-card">
-                <h4>Process Parameters</h4>
-                <div className="sensor-reading">
-                  <span>Furnace Outlet Temp</span>
-                  <strong>{realtimeData.current_readings.furnace_outlet_temp}°C</strong>
-                  <span className={`trend ${realtimeData.trend_indicators.furnace_temp_trend}`}>
-                    {realtimeData.trend_indicators.furnace_temp_trend}
-                  </span>
-                </div>
-                <div className="sensor-reading">
-                  <span>Column Pressure</span>
-                  <strong>{realtimeData.current_readings.column_pressure} bar</strong>
-                </div>
-                <div className="sensor-reading">
-                  <span>Reflux Ratio</span>
-                  <strong>{realtimeData.current_readings.reflux_ratio}</strong>
-                </div>
-                <div className="sensor-reading">
-                  <span>Feed Flow Rate</span>
-                  <strong>{realtimeData.current_readings.feed_flow_rate} m³/h</strong>
-                </div>
-              </div>
+                {realtimeData.active_alerts.length > 0 && (
+                  <div className="alerts-panel">
+                    <h4>Active Alerts</h4>
+                    {realtimeData.active_alerts.map((alert, idx) => (
+                      <div key={idx} className={`alert-item ${alert.level}`}>
+                        <span className="alert-level">{alert.level.toUpperCase()}</span>
+                        <span className="alert-message">{alert.message}</span>
+                        <span className="alert-time">
+                          {new Date(alert.timestamp).toLocaleTimeString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-              <div className="sensor-card">
-                <h4>Quality Metrics</h4>
-                <div className="sensor-reading">
-                  <span>Diesel Quality Index</span>
-                  <strong>{realtimeData.current_readings.diesel_quality_index}</strong>
-                  <span className={`trend ${realtimeData.trend_indicators.quality_trend}`}>
-                    {realtimeData.trend_indicators.quality_trend}
-                  </span>
-                </div>
-                <div className="sensor-reading">
-                  <span>Petrol Quality Index</span>
-                  <strong>{realtimeData.current_readings.petrol_quality_index}</strong>
-                </div>
-                <div className="sensor-reading">
-                  <span>Energy Consumption</span>
-                  <strong>{realtimeData.current_readings.energy_consumption}</strong>
-                </div>
-                <div className="sensor-reading">
-                  <span>Flare Rate</span>
-                  <strong>{realtimeData.current_readings.flare_rate} Nm³/h</strong>
-                </div>
-              </div>
+                <div className="realtime-grid">
+                  <div className="sensor-card">
+                    <h4>Process Parameters</h4>
+                    <div className="sensor-reading">
+                      <span>Furnace Outlet Temp</span>
+                      <strong>{realtimeData.current_readings.furnace_outlet_temp}°C</strong>
+                      <span className={`trend ${realtimeData.trend_indicators.furnace_temp_trend}`}>
+                        {realtimeData.trend_indicators.furnace_temp_trend}
+                      </span>
+                    </div>
+                    <div className="sensor-reading">
+                      <span>Column Pressure</span>
+                      <strong>{realtimeData.current_readings.column_pressure} bar</strong>
+                    </div>
+                    <div className="sensor-reading">
+                      <span>Reflux Ratio</span>
+                      <strong>{realtimeData.current_readings.reflux_ratio}</strong>
+                    </div>
+                    <div className="sensor-reading">
+                      <span>Feed Flow Rate</span>
+                      <strong>{realtimeData.current_readings.feed_flow_rate} m³/h</strong>
+                    </div>
+                  </div>
 
-              <div className="sensor-card">
-                <h4>Equipment Health</h4>
-                <div className="sensor-reading">
-                  <span>Compressor Vibration</span>
-                  <strong>{realtimeData.current_readings.compressor_vibration} mm/s</strong>
-                </div>
-                <div className="sensor-reading">
-                  <span>Pump Discharge Pressure</span>
-                  <strong>{realtimeData.current_readings.pump_discharge_pressure} bar</strong>
-                </div>
-                <div className="sensor-reading">
-                  <span>Model Inference Time</span>
-                  <strong>{realtimeData.system_health.model_inference_time_ms} ms</strong>
-                </div>
-                <div className="sensor-reading">
-                  <span>Data Latency</span>
-                  <strong>{realtimeData.system_health.data_latency_seconds} s</strong>
-                </div>
-              </div>
-            </div>
+                  <div className="sensor-card">
+                    <h4>Quality Metrics</h4>
+                    <div className="sensor-reading">
+                      <span>Diesel Quality Index</span>
+                      <strong>{realtimeData.current_readings.diesel_quality_index}</strong>
+                      <span className={`trend ${realtimeData.trend_indicators.quality_trend}`}>
+                        {realtimeData.trend_indicators.quality_trend}
+                      </span>
+                    </div>
+                    <div className="sensor-reading">
+                      <span>Petrol Quality Index</span>
+                      <strong>{realtimeData.current_readings.petrol_quality_index}</strong>
+                    </div>
+                    <div className="sensor-reading">
+                      <span>Energy Consumption</span>
+                      <strong>{realtimeData.current_readings.energy_consumption}</strong>
+                    </div>
+                    <div className="sensor-reading">
+                      <span>Flare Rate</span>
+                      <strong>{realtimeData.current_readings.flare_rate} Nm³/h</strong>
+                    </div>
+                  </div>
 
-            <div className="performance-metrics">
-              <h4>Performance Metrics</h4>
-              <div className="metrics-grid">
-                <div className="metric-card">
-                  <span>Prediction Accuracy</span>
-                  <strong>{realtimeData.performance_metrics.prediction_accuracy}%</strong>
+                  <div className="sensor-card">
+                    <h4>Equipment Health</h4>
+                    <div className="sensor-reading">
+                      <span>Compressor Vibration</span>
+                      <strong>{realtimeData.current_readings.compressor_vibration} mm/s</strong>
+                    </div>
+                    <div className="sensor-reading">
+                      <span>Pump Discharge Pressure</span>
+                      <strong>{realtimeData.current_readings.pump_discharge_pressure} bar</strong>
+                    </div>
+                    <div className="sensor-reading">
+                      <span>Model Inference Time</span>
+                      <strong>{realtimeData.system_health.model_inference_time_ms} ms</strong>
+                    </div>
+                    <div className="sensor-reading">
+                      <span>Data Latency</span>
+                      <strong>{realtimeData.system_health.data_latency_seconds} s</strong>
+                    </div>
+                  </div>
                 </div>
-                <div className="metric-card">
-                  <span>Optimization Uptime</span>
-                  <strong>{realtimeData.performance_metrics.optimization_uptime}</strong>
+
+                <div className="performance-metrics">
+                  <h4>Performance Metrics</h4>
+                  <div className="metrics-grid">
+                    <div className="metric-card">
+                      <span>Prediction Accuracy</span>
+                      <strong>{realtimeData.performance_metrics.prediction_accuracy}%</strong>
+                    </div>
+                    <div className="metric-card">
+                      <span>Optimization Uptime</span>
+                      <strong>{realtimeData.performance_metrics.optimization_uptime}</strong>
+                    </div>
+                    <div className="metric-card">
+                      <span>Daily Profit Impact</span>
+                      <strong>INR {realtimeData.performance_metrics.daily_profit_impact} Lakh</strong>
+                    </div>
+                    <div className="metric-card">
+                      <span>Energy Efficiency</span>
+                      <strong>{realtimeData.performance_metrics.energy_efficiency}%</strong>
+                    </div>
+                  </div>
                 </div>
-                <div className="metric-card">
-                  <span>Daily Profit Impact</span>
-                  <strong>INR {realtimeData.performance_metrics.daily_profit_impact} Lakh</strong>
-                </div>
-                <div className="metric-card">
-                  <span>Energy Efficiency</span>
-                  <strong>{realtimeData.performance_metrics.energy_efficiency}%</strong>
-                </div>
-              </div>
-            </div>
               </div>
             )}
 
@@ -830,250 +887,250 @@ function App() {
                   <span>Mini Project #4</span>
                   <strong>Multi-Dimensional Optimization Intelligence</strong>
                 </div>
-            
-            <div className="optimal-point-card">
-              <h4>Optimal Operating Point</h4>
-              <div className="optimal-metrics">
-                <div className="optimal-metric">
-                  <span>Furnace Temperature</span>
-                  <strong>{advancedVizData.optimal_operating_point.furnace_temp}°C</strong>
-                </div>
-                <div className="optimal-metric">
-                  <span>Column Pressure</span>
-                  <strong>{advancedVizData.optimal_operating_point.column_pressure} bar</strong>
-                </div>
-                <div className="optimal-metric">
-                  <span>Expected Profit</span>
-                  <strong>{advancedVizData.optimal_operating_point.expected_profit}%</strong>
-                </div>
-                <div className="optimal-metric">
-                  <span>Confidence</span>
-                  <strong>{advancedVizData.optimal_operating_point.confidence}%</strong>
-                </div>
-              </div>
-            </div>
 
-            <div className="viz-grid" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-              <div className="viz-card">
-                <h4>Profit Surface Contour Map</h4>
-                <Plot
-                  data={[
-                    {
-                      z: advancedVizData.heat_map.profit_surface,
-                      x: advancedVizData.heat_map.furnace_temps,
-                      y: advancedVizData.heat_map.column_pressures,
-                      type: 'contour',
-                      colorscale: [
-                        [0, '#2E4057'],
-                        [0.25, '#048A81'],
-                        [0.5, '#54C6EB'],
-                        [0.75, '#8FC93A'],
-                        [1, '#F18F01']
-                      ],
-                      contours: {
-                        coloring: 'heatmap',
-                        showlabels: true,
-                        labelfont: { size: 12, color: 'white' }
-                      },
-                      line: { smoothing: 0.85 },
-                      colorbar: {
-                        title: { text: "Profit Margin (%)", side: "right" }
-                      }
-                    }
-                  ]}
-                  layout={{
-                    title: { text: "Profit Landscape: Temperature vs Pressure" },
-                    xaxis: { title: { text: "Furnace Temperature (°C)" } },
-                    yaxis: { title: { text: "Column Pressure (bar)" } },
-                    height: 400,
-                    dragmode: false,
-                    modebar: {
-                      remove: ['select2d', 'lasso2d']
-                    }
-                  }}
-                  useResizeHandler={true}
-                  style={{ width: "100%", height: "100%" }}
-                />
-                <div className="graph-interpretation">
-                  <h5>ℹ️ Graph Interpretation</h5>
-                  <p><strong>X & Y Axes:</strong> Represent the Furnace Temperature and Column Pressure tuning levers.</p>
-                  <p><strong>Contours & Color:</strong> The topographic gradient maps the absolute profitability. Target the "orange" peaks for optimal operating conditions where yields are maximized against energy costs.</p>
+                <div className="optimal-point-card">
+                  <h4>Optimal Operating Point</h4>
+                  <div className="optimal-metrics">
+                    <div className="optimal-metric">
+                      <span>Furnace Temperature</span>
+                      <strong>{advancedVizData.optimal_operating_point.furnace_temp}°C</strong>
+                    </div>
+                    <div className="optimal-metric">
+                      <span>Column Pressure</span>
+                      <strong>{advancedVizData.optimal_operating_point.column_pressure} bar</strong>
+                    </div>
+                    <div className="optimal-metric">
+                      <span>Expected Profit</span>
+                      <strong>{advancedVizData.optimal_operating_point.expected_profit}%</strong>
+                    </div>
+                    <div className="optimal-metric">
+                      <span>Confidence</span>
+                      <strong>{advancedVizData.optimal_operating_point.confidence}%</strong>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="viz-card">
-                <h4>3D Quality Response Surface</h4>
-                <Plot
-                  data={[
-                    {
-                      x: advancedVizData.surface_3d.map(d => d.furnace_temp),
-                      y: advancedVizData.surface_3d.map(d => d.column_pressure),
-                      z: advancedVizData.surface_3d.map(d => d.diesel_quality),
-                      type: 'mesh3d',
-                      opacity: 0.8,
-                      intensity: advancedVizData.surface_3d.map(d => d.diesel_quality),
-                      colorscale: 'Viridis',
-                      showscale: true,
-                      colorbar: { title: { text: "Diesel Quality", font: { color: "#1a202c" } }, x: 1.10 },
-                      name: "Diesel Quality",
-                      hoverinfo: "x+y+z+name",
-                      hoverlabel: { 
-                        bgcolor: advancedVizData.surface_3d.map(d => getViridisColor(d.diesel_quality)),
-                        font: { color: 'white' }
-                      }
-                    } as any,
-                    {
-                      x: advancedVizData.surface_3d.map(d => d.furnace_temp),
-                      y: advancedVizData.surface_3d.map(d => d.column_pressure),
-                      z: advancedVizData.surface_3d.map(d => d.petrol_quality),
-                      type: 'scatter3d',
-                      mode: 'markers',
-                      marker: {
-                        size: 6,
-                        color: advancedVizData.surface_3d.map(d => d.petrol_quality),
-                        colorscale: 'Plasma',
-                        showscale: true,
-                        opacity: 0.9,
-                        line: { width: 1, color: 'white' },
-                        colorbar: { title: { text: "Petrol Quality", font: { color: "#1a202c" } }, x: -0.15 }
-                      },
-                      name: "Petrol Quality",
-                      hoverinfo: "x+y+z+name"
-                    }
-                  ]}
-                  layout={{
-                    title: { text: "Advanced Quality Topology", font: { color: "#003366", family: "Inter", size: 18 } },
-                    font: { color: "#1a202c", family: "Inter" },
-                    scene: {
-                      xaxis: { title: { text: "Furnace Temp (°C)" } },
-                      yaxis: { title: { text: "Pressure (bar)" } },
-                      zaxis: { title: { text: "Quality Index" } },
-                      camera: {
-                        eye: { x: 1.6, y: 1.6, z: 1.2 }
-                      }
-                    },
-                    margin: { l: 20, r: 150, b: 20, t: 50 },
-                    legend: { title: { text: 'Key' }, x: 1.05, y: 0.6 },
-                    height: 550,
-                    dragmode: "turntable",
-                    modebar: {
-                      remove: ['select2d', 'lasso2d']
-                    }
-                  }}
-                  useResizeHandler={true}
-                  style={{ width: "100%", height: "100%" }}
-                />
-                <div className="graph-interpretation">
-                  <h5>ℹ️ Comprehensive Graph Interpretation</h5>
-                  <div style={{ display: 'grid', gap: '10px' }}>
-                    <p style={{ margin: 0 }}><strong>The Continuous 3D Mesh (Diesel Quality):</strong></p>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#4c5d74' }}>
-                      <li><strong>What it represents:</strong> The flowing 3D landscape maps out the predicted Diesel Quality Index.</li>
-                      <li><strong>Right-Side Colorbar (Yellow to Purple):</strong> The legend for the mesh. <strong>Bright Yellow</strong> represents the highest peaks (best Diesel Quality). <strong>Purple/Blue</strong> represents the valleys (worst Diesel Quality).</li>
-                    </ul>
-                    
-                    <p style={{ margin: 0 }}><strong>The Data Points (Petrol Quality):</strong></p>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#4c5d74' }}>
-                      <li><strong>What they represent:</strong> The floating scatter dots plotted over the graph represent predicted Petrol Quality at those exact same coordinates.</li>
-                      <li><strong>Yellow/Red vs Purple:</strong> The dots use their own color scale (legend on the left). <strong>Yellow dots</strong> indicate exceptional Petrol Quality, <strong>Red/Magenta</strong> is medium, and <strong>Dark Purple</strong> is low.</li>
-                    </ul>
-                    
-                    <p style={{ margin: 0 }}><strong>How to Use This (Trade-off Intelligence):</strong></p>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#4c5d74' }}>
-                      <li>To maximize total yield, hunt for the "Sweet Spot": an area where the <strong>3D mesh peaks (Yellow)</strong> AND the <strong>floating points around it are also Yellow/Red</strong>.</li>
-                      <li>If you tune exclusively for a yellow peak on the mesh, but the dots there are dark purple, it signifies a bad trade-off (great diesel, off-spec petrol).</li>
-                    </ul>
+                <div className="viz-grid" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                  <div className="viz-card">
+                    <h4>Profit Surface Contour Map</h4>
+                    <Plot
+                      data={[
+                        {
+                          z: advancedVizData.heat_map.profit_surface,
+                          x: advancedVizData.heat_map.furnace_temps,
+                          y: advancedVizData.heat_map.column_pressures,
+                          type: 'contour',
+                          colorscale: [
+                            [0, '#2E4057'],
+                            [0.25, '#048A81'],
+                            [0.5, '#54C6EB'],
+                            [0.75, '#8FC93A'],
+                            [1, '#F18F01']
+                          ],
+                          contours: {
+                            coloring: 'heatmap',
+                            showlabels: true,
+                            labelfont: { size: 12, color: 'white' }
+                          },
+                          line: { smoothing: 0.85 },
+                          colorbar: {
+                            title: { text: "Profit Margin (%)", side: "right" }
+                          }
+                        }
+                      ]}
+                      layout={{
+                        title: { text: "Profit Landscape: Temperature vs Pressure" },
+                        xaxis: { title: { text: "Furnace Temperature (°C)" } },
+                        yaxis: { title: { text: "Column Pressure (bar)" } },
+                        height: 400,
+                        dragmode: false,
+                        modebar: {
+                          remove: ['select2d', 'lasso2d']
+                        }
+                      }}
+                      useResizeHandler={true}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                    <div className="graph-interpretation">
+                      <h5>ℹ️ Graph Interpretation</h5>
+                      <p><strong>X & Y Axes:</strong> Represent the Furnace Temperature and Column Pressure tuning levers.</p>
+                      <p><strong>Contours & Color:</strong> The topographic gradient maps the absolute profitability. Target the "orange" peaks for optimal operating conditions where yields are maximized against energy costs.</p>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
 
-            <div className="correlation-matrix">
-              <h4>Parameter Correlations</h4>
-              <div className="correlation-grid">
-                <div className="correlation-item">
-                  <span>Furnace Temp ↔ Diesel Quality</span>
-                  <div className="correlation-bar">
-                    <div 
-                      className="correlation-fill positive"
-                      style={{width: `${Math.abs(advancedVizData.correlations.furnace_temp_vs_diesel) * 100}%`}}
+                  <div className="viz-card">
+                    <h4>3D Quality Response Surface</h4>
+                    <Plot
+                      data={[
+                        {
+                          x: advancedVizData.surface_3d.map(d => d.furnace_temp),
+                          y: advancedVizData.surface_3d.map(d => d.column_pressure),
+                          z: advancedVizData.surface_3d.map(d => d.diesel_quality),
+                          type: 'mesh3d',
+                          opacity: 0.8,
+                          intensity: advancedVizData.surface_3d.map(d => d.diesel_quality),
+                          colorscale: 'Viridis',
+                          showscale: true,
+                          colorbar: { title: { text: "Diesel Quality", font: { color: "#1a202c" } }, x: 1.10 },
+                          name: "Diesel Quality",
+                          hoverinfo: "x+y+z+name",
+                          hoverlabel: {
+                            bgcolor: advancedVizData.surface_3d.map(d => getViridisColor(d.diesel_quality)),
+                            font: { color: 'white' }
+                          }
+                        } as any,
+                        {
+                          x: advancedVizData.surface_3d.map(d => d.furnace_temp),
+                          y: advancedVizData.surface_3d.map(d => d.column_pressure),
+                          z: advancedVizData.surface_3d.map(d => d.petrol_quality),
+                          type: 'scatter3d',
+                          mode: 'markers',
+                          marker: {
+                            size: 6,
+                            color: advancedVizData.surface_3d.map(d => d.petrol_quality),
+                            colorscale: 'Plasma',
+                            showscale: true,
+                            opacity: 0.9,
+                            line: { width: 1, color: 'white' },
+                            colorbar: { title: { text: "Petrol Quality", font: { color: "#1a202c" } }, x: -0.15 }
+                          },
+                          name: "Petrol Quality",
+                          hoverinfo: "x+y+z+name"
+                        }
+                      ]}
+                      layout={{
+                        title: { text: "Advanced Quality Topology", font: { color: "#003366", family: "Inter", size: 18 } },
+                        font: { color: "#1a202c", family: "Inter" },
+                        scene: {
+                          xaxis: { title: { text: "Furnace Temp (°C)" } },
+                          yaxis: { title: { text: "Pressure (bar)" } },
+                          zaxis: { title: { text: "Quality Index" } },
+                          camera: {
+                            eye: { x: 1.6, y: 1.6, z: 1.2 }
+                          }
+                        },
+                        margin: { l: 20, r: 150, b: 20, t: 50 },
+                        legend: { title: { text: 'Key' }, x: 1.05, y: 0.6 },
+                        height: 550,
+                        dragmode: "turntable",
+                        modebar: {
+                          remove: ['select2d', 'lasso2d']
+                        }
+                      }}
+                      useResizeHandler={true}
+                      style={{ width: "100%", height: "100%" }}
                     />
+                    <div className="graph-interpretation">
+                      <h5>ℹ️ Comprehensive Graph Interpretation</h5>
+                      <div style={{ display: 'grid', gap: '10px' }}>
+                        <p style={{ margin: 0 }}><strong>The Continuous 3D Mesh (Diesel Quality):</strong></p>
+                        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#4c5d74' }}>
+                          <li><strong>What it represents:</strong> The flowing 3D landscape maps out the predicted Diesel Quality Index.</li>
+                          <li><strong>Right-Side Colorbar (Yellow to Purple):</strong> The legend for the mesh. <strong>Bright Yellow</strong> represents the highest peaks (best Diesel Quality). <strong>Purple/Blue</strong> represents the valleys (worst Diesel Quality).</li>
+                        </ul>
+
+                        <p style={{ margin: 0 }}><strong>The Data Points (Petrol Quality):</strong></p>
+                        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#4c5d74' }}>
+                          <li><strong>What they represent:</strong> The floating scatter dots plotted over the graph represent predicted Petrol Quality at those exact same coordinates.</li>
+                          <li><strong>Yellow/Red vs Purple:</strong> The dots use their own color scale (legend on the left). <strong>Yellow dots</strong> indicate exceptional Petrol Quality, <strong>Red/Magenta</strong> is medium, and <strong>Dark Purple</strong> is low.</li>
+                        </ul>
+
+                        <p style={{ margin: 0 }}><strong>How to Use This (Trade-off Intelligence):</strong></p>
+                        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#4c5d74' }}>
+                          <li>To maximize total yield, hunt for the "Sweet Spot": an area where the <strong>3D mesh peaks (Yellow)</strong> AND the <strong>floating points around it are also Yellow/Red</strong>.</li>
+                          <li>If you tune exclusively for a yellow peak on the mesh, but the dots there are dark purple, it signifies a bad trade-off (great diesel, off-spec petrol).</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
-                  <strong>{advancedVizData.correlations.furnace_temp_vs_diesel}</strong>
                 </div>
-                <div className="correlation-item">
-                  <span>Furnace Temp ↔ Petrol Quality</span>
-                  <div className="correlation-bar">
-                    <div 
-                      className="correlation-fill positive"
-                      style={{width: `${Math.abs(advancedVizData.correlations.furnace_temp_vs_petrol) * 100}%`}}
-                    />
+
+                <div className="correlation-matrix">
+                  <h4>Parameter Correlations</h4>
+                  <div className="correlation-grid">
+                    <div className="correlation-item">
+                      <span>Furnace Temp ↔ Diesel Quality</span>
+                      <div className="correlation-bar">
+                        <div
+                          className="correlation-fill positive"
+                          style={{ width: `${Math.abs(advancedVizData.correlations.furnace_temp_vs_diesel) * 100}%` }}
+                        />
+                      </div>
+                      <strong>{advancedVizData.correlations.furnace_temp_vs_diesel}</strong>
+                    </div>
+                    <div className="correlation-item">
+                      <span>Furnace Temp ↔ Petrol Quality</span>
+                      <div className="correlation-bar">
+                        <div
+                          className="correlation-fill positive"
+                          style={{ width: `${Math.abs(advancedVizData.correlations.furnace_temp_vs_petrol) * 100}%` }}
+                        />
+                      </div>
+                      <strong>{advancedVizData.correlations.furnace_temp_vs_petrol}</strong>
+                    </div>
+                    <div className="correlation-item">
+                      <span>Pressure ↔ Diesel Quality</span>
+                      <div className="correlation-bar">
+                        <div
+                          className="correlation-fill negative"
+                          style={{ width: `${Math.abs(advancedVizData.correlations.pressure_vs_diesel) * 100}%` }}
+                        />
+                      </div>
+                      <strong>{advancedVizData.correlations.pressure_vs_diesel}</strong>
+                    </div>
+                    <div className="correlation-item">
+                      <span>Pressure ↔ Petrol Quality</span>
+                      <div className="correlation-bar">
+                        <div
+                          className="correlation-fill"
+                          style={{ width: `${Math.abs(advancedVizData.correlations.pressure_vs_petrol) * 100}%` }}
+                        />
+                      </div>
+                      <strong>{advancedVizData.correlations.pressure_vs_petrol}</strong>
+                    </div>
+                    <div className="correlation-item">
+                      <span>Flow Rate ↔ Diesel Quality</span>
+                      <div className="correlation-bar">
+                        <div
+                          className="correlation-fill positive"
+                          style={{ width: `${Math.abs(advancedVizData.correlations.flow_vs_diesel) * 100}%` }}
+                        />
+                      </div>
+                      <strong>{advancedVizData.correlations.flow_vs_diesel}</strong>
+                    </div>
+                    <div className="correlation-item">
+                      <span>Flow Rate ↔ Petrol Quality</span>
+                      <div className="correlation-bar">
+                        <div
+                          className="correlation-fill positive"
+                          style={{ width: `${Math.abs(advancedVizData.correlations.flow_vs_petrol) * 100}%` }}
+                        />
+                      </div>
+                      <strong>{advancedVizData.correlations.flow_vs_petrol}</strong>
+                    </div>
+                    <div className="correlation-item">
+                      <span>Reflux Ratio ↔ Diesel Quality</span>
+                      <div className="correlation-bar">
+                        <div
+                          className="correlation-fill positive"
+                          style={{ width: `${Math.abs(advancedVizData.correlations.reflux_vs_diesel) * 100}%` }}
+                        />
+                      </div>
+                      <strong>{advancedVizData.correlations.reflux_vs_diesel}</strong>
+                    </div>
+                    <div className="correlation-item">
+                      <span>Reflux Ratio ↔ Petrol Quality</span>
+                      <div className="correlation-bar">
+                        <div
+                          className="correlation-fill positive"
+                          style={{ width: `${Math.abs(advancedVizData.correlations.reflux_vs_petrol) * 100}%` }}
+                        />
+                      </div>
+                      <strong>{advancedVizData.correlations.reflux_vs_petrol}</strong>
+                    </div>
                   </div>
-                  <strong>{advancedVizData.correlations.furnace_temp_vs_petrol}</strong>
-                </div>
-                <div className="correlation-item">
-                  <span>Pressure ↔ Diesel Quality</span>
-                  <div className="correlation-bar">
-                    <div 
-                      className="correlation-fill negative"
-                      style={{width: `${Math.abs(advancedVizData.correlations.pressure_vs_diesel) * 100}%`}}
-                    />
-                  </div>
-                  <strong>{advancedVizData.correlations.pressure_vs_diesel}</strong>
-                </div>
-                <div className="correlation-item">
-                  <span>Pressure ↔ Petrol Quality</span>
-                  <div className="correlation-bar">
-                    <div 
-                      className="correlation-fill"
-                      style={{width: `${Math.abs(advancedVizData.correlations.pressure_vs_petrol) * 100}%`}}
-                    />
-                  </div>
-                  <strong>{advancedVizData.correlations.pressure_vs_petrol}</strong>
-                </div>
-                <div className="correlation-item">
-                  <span>Flow Rate ↔ Diesel Quality</span>
-                  <div className="correlation-bar">
-                    <div 
-                      className="correlation-fill positive"
-                      style={{width: `${Math.abs(advancedVizData.correlations.flow_vs_diesel) * 100}%`}}
-                    />
-                  </div>
-                  <strong>{advancedVizData.correlations.flow_vs_diesel}</strong>
-                </div>
-                <div className="correlation-item">
-                  <span>Flow Rate ↔ Petrol Quality</span>
-                  <div className="correlation-bar">
-                    <div 
-                      className="correlation-fill positive"
-                      style={{width: `${Math.abs(advancedVizData.correlations.flow_vs_petrol) * 100}%`}}
-                    />
-                  </div>
-                  <strong>{advancedVizData.correlations.flow_vs_petrol}</strong>
-                </div>
-                <div className="correlation-item">
-                  <span>Reflux Ratio ↔ Diesel Quality</span>
-                  <div className="correlation-bar">
-                    <div 
-                      className="correlation-fill positive"
-                      style={{width: `${Math.abs(advancedVizData.correlations.reflux_vs_diesel) * 100}%`}}
-                    />
-                  </div>
-                  <strong>{advancedVizData.correlations.reflux_vs_diesel}</strong>
-                </div>
-                <div className="correlation-item">
-                  <span>Reflux Ratio ↔ Petrol Quality</span>
-                  <div className="correlation-bar">
-                    <div 
-                      className="correlation-fill positive"
-                      style={{width: `${Math.abs(advancedVizData.correlations.reflux_vs_petrol) * 100}%`}}
-                    />
-                  </div>
-                  <strong>{advancedVizData.correlations.reflux_vs_petrol}</strong>
                 </div>
               </div>
-            </div>
-          </div>
             )}
           </section>
         )}
@@ -1119,7 +1176,7 @@ function App() {
                     max={25}
                     step={5}
                     value={maintenanceLevers.pump_load_pct}
-                    onChange={(e) => setMaintenanceLevers(prev => ({...prev, pump_load_pct: Number(e.target.value)}))}
+                    onChange={(e) => setMaintenanceLevers(prev => ({ ...prev, pump_load_pct: Number(e.target.value) }))}
                   />
                   <span className="lever-value">{(maintenanceData.levers.pump_load_pct.current + maintenanceLevers.pump_load_pct)}%</span>
                 </div>
@@ -1134,7 +1191,7 @@ function App() {
                     max={13}
                     step={1}
                     value={maintenanceLevers.cooling_temp}
-                    onChange={(e) => setMaintenanceLevers(prev => ({...prev, cooling_temp: Number(e.target.value)}))}
+                    onChange={(e) => setMaintenanceLevers(prev => ({ ...prev, cooling_temp: Number(e.target.value) }))}
                   />
                   <span className="lever-value">{(maintenanceData.levers.cooling_temp.current + maintenanceLevers.cooling_temp)}°C</span>
                 </div>
@@ -1177,20 +1234,20 @@ function App() {
             </div>
 
             <div className="grid-cards">
-            {dynamicMaintenance.assets.map((asset) => (
-              <div key={asset.name} className="asset-card">
-                <div className="asset-top">
-                  <strong>{asset.name}</strong>
-                  <span style={{ color: asset.status === "alert" ? ALERT_RED : IOCL_BLUE }}>
-                    {asset.hours_remaining} hrs
-                  </span>
+              {dynamicMaintenance.assets.map((asset) => (
+                <div key={asset.name} className="asset-card">
+                  <div className="asset-top">
+                    <strong>{asset.name}</strong>
+                    <span style={{ color: asset.status === "alert" ? ALERT_RED : IOCL_BLUE }}>
+                      {asset.hours_remaining} hrs
+                    </span>
+                  </div>
+                  <progress max={1} value={asset.rul_ratio} className={asset.status === "alert" ? "alert" : ""} />
+                  {asset.status === "alert" && (
+                    <p className="alert-text">ALERT: Failure predicted within 72 hours window.</p>
+                  )}
                 </div>
-                <progress max={1} value={asset.rul_ratio} className={asset.status === "alert" ? "alert" : ""} />
-                {asset.status === "alert" && (
-                  <p className="alert-text">ALERT: Failure predicted within 72 hours window.</p>
-                )}
-              </div>
-            ))}
+              ))}
             </div>
           </section>
         )}
@@ -1236,7 +1293,7 @@ function App() {
                     max={60}
                     step={5}
                     value={benzeneLevers.steam_flow_pct}
-                    onChange={(e) => setBenzeneLevers(prev => ({...prev, steam_flow_pct: Number(e.target.value)}))}
+                    onChange={(e) => setBenzeneLevers(prev => ({ ...prev, steam_flow_pct: Number(e.target.value) }))}
                   />
                   <span className="lever-value">{(benzeneData.levers.steam_flow_pct.current + benzeneLevers.steam_flow_pct)}%</span>
                 </div>
@@ -1251,7 +1308,7 @@ function App() {
                     max={15}
                     step={1}
                     value={benzeneLevers.ambient_offset}
-                    onChange={(e) => setBenzeneLevers(prev => ({...prev, ambient_offset: Number(e.target.value)}))}
+                    onChange={(e) => setBenzeneLevers(prev => ({ ...prev, ambient_offset: Number(e.target.value) }))}
                   />
                   <span className="lever-value">{(10 + benzeneLevers.ambient_offset)}°C</span>
                 </div>
@@ -1356,7 +1413,7 @@ function App() {
                     max={65}
                     step={5}
                     value={flareLevers.recycle_valve}
-                    onChange={(e) => setFlareLevers(prev => ({...prev, recycle_valve: Number(e.target.value)}))}
+                    onChange={(e) => setFlareLevers(prev => ({ ...prev, recycle_valve: Number(e.target.value) }))}
                   />
                   <span className="lever-value">{(flareData.levers.recycle_valve.current + flareLevers.recycle_valve)}%</span>
                 </div>
@@ -1371,7 +1428,7 @@ function App() {
                     max={1.5}
                     step={0.1}
                     value={flareLevers.upstream_pressure_offset}
-                    onChange={(e) => setFlareLevers(prev => ({...prev, upstream_pressure_offset: Number(e.target.value)}))}
+                    onChange={(e) => setFlareLevers(prev => ({ ...prev, upstream_pressure_offset: Number(e.target.value) }))}
                   />
                   <span className="lever-value">{(4.8 + flareLevers.upstream_pressure_offset).toFixed(1)} bar</span>
                 </div>
@@ -1405,12 +1462,12 @@ function App() {
                     type: 'pie',
                     hole: 0.4,
                     marker: {
-                        colors: ['#2E4057', '#F58518', '#048A81', '#E15759']
+                      colors: ['#2E4057', '#F58518', '#048A81', '#E15759']
                     }
                   }
                 ]}
-                layout={{ 
-                  title: { text: "Flaring Sources Breakdown" }, 
+                layout={{
+                  title: { text: "Flaring Sources Breakdown" },
                   height: 350,
                   margin: { t: 60, b: 40, l: 20, r: 20 },
                   legend: { orientation: 'h', y: -0.2 }
@@ -1450,9 +1507,9 @@ function App() {
               <p><strong>30-Minute AI Forecast:</strong> The blue line shows actual history, while the dotted red line projects future flaring given the current simulated surges. Use the recycle valve to bend this forecast safely below limits.</p>
             </div>
             {dynamicFlare.current_flare > flareData.threshold ? (
-                <p className="alert-text">CRITICAL BREACH: Flaring volume has exceeded ESG quota limits!</p>
+              <p className="alert-text">CRITICAL BREACH: Flaring volume has exceeded ESG quota limits!</p>
             ) : (
-                <p className="alert-text">{flareData.message}</p>
+              <p className="alert-text">{flareData.message}</p>
             )}
           </section>
         )}
