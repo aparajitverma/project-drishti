@@ -26,6 +26,23 @@ const modules: ModuleKey[] = [
   "Flare & ESG Tracker",
 ];
 
+const getViridisColor = (val: number, min = 88, max = 94) => {
+  const t = Math.max(0, Math.min(1, (val - min) / (max - min)));
+  if (t < 0.5) {
+    const t2 = t * 2;
+    const r = Math.round(68 + t2 * (33 - 68));
+    const g = Math.round(1 + t2 * (145 - 1));
+    const b = Math.round(84 + t2 * (140 - 84));
+    return `rgb(${r},${g},${b})`;
+  } else {
+    const t2 = (t - 0.5) * 2;
+    const r = Math.round(33 + t2 * (253 - 33));
+    const g = Math.round(145 + t2 * (231 - 145));
+    const b = Math.round(140 + t2 * (37 - 140));
+    return `rgb(${r},${g},${b})`;
+  }
+};
+
 function App() {
   const [activeModule, setActiveModule] = useState<ModuleKey>("Yield Optimizer");
   const [activeYieldTab, setActiveYieldTab] = useState<YieldOptimizerTab>("optimization");
@@ -877,6 +894,11 @@ function App() {
                   useResizeHandler={true}
                   style={{ width: "100%", height: "100%" }}
                 />
+                <div className="graph-interpretation">
+                  <h5>ℹ️ Graph Interpretation</h5>
+                  <p><strong>X & Y Axes:</strong> Represent the Furnace Temperature and Column Pressure tuning levers.</p>
+                  <p><strong>Contours & Color:</strong> The topographic gradient maps the absolute profitability. Target the "orange" peaks for optimal operating conditions where yields are maximized against energy costs.</p>
+                </div>
               </div>
 
               <div className="viz-card">
@@ -891,8 +913,14 @@ function App() {
                       opacity: 0.8,
                       intensity: advancedVizData.surface_3d.map(d => d.diesel_quality),
                       colorscale: 'Viridis',
-                      name: "Diesel Quality Surface",
-                      hoverinfo: "x+y+z+name"
+                      showscale: true,
+                      colorbar: { title: { text: "Diesel Quality", font: { color: "#1a202c" } }, x: 1.10 },
+                      name: "Diesel Quality",
+                      hoverinfo: "x+y+z+name",
+                      hoverlabel: { 
+                        bgcolor: advancedVizData.surface_3d.map(d => getViridisColor(d.diesel_quality)),
+                        font: { color: 'white' }
+                      }
                     } as any,
                     {
                       x: advancedVizData.surface_3d.map(d => d.furnace_temp),
@@ -907,14 +935,15 @@ function App() {
                         showscale: true,
                         opacity: 0.9,
                         line: { width: 1, color: 'white' },
-                        colorbar: { title: { text: "Petrol Quality" }, x: -0.15 }
+                        colorbar: { title: { text: "Petrol Quality", font: { color: "#1a202c" } }, x: -0.15 }
                       },
-                      name: "Petrol Quality Points",
+                      name: "Petrol Quality",
                       hoverinfo: "x+y+z+name"
                     }
                   ]}
                   layout={{
-                    title: { text: "Advanced Quality Topology" },
+                    title: { text: "Advanced Quality Topology", font: { color: "#003366", family: "Inter", size: 18 } },
+                    font: { color: "#1a202c", family: "Inter" },
                     scene: {
                       xaxis: { title: { text: "Furnace Temp (°C)" } },
                       yaxis: { title: { text: "Pressure (bar)" } },
@@ -934,6 +963,28 @@ function App() {
                   useResizeHandler={true}
                   style={{ width: "100%", height: "100%" }}
                 />
+                <div className="graph-interpretation">
+                  <h5>ℹ️ Comprehensive Graph Interpretation</h5>
+                  <div style={{ display: 'grid', gap: '10px' }}>
+                    <p style={{ margin: 0 }}><strong>The Continuous 3D Mesh (Diesel Quality):</strong></p>
+                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#4c5d74' }}>
+                      <li><strong>What it represents:</strong> The flowing 3D landscape maps out the predicted Diesel Quality Index.</li>
+                      <li><strong>Right-Side Colorbar (Yellow to Purple):</strong> The legend for the mesh. <strong>Bright Yellow</strong> represents the highest peaks (best Diesel Quality). <strong>Purple/Blue</strong> represents the valleys (worst Diesel Quality).</li>
+                    </ul>
+                    
+                    <p style={{ margin: 0 }}><strong>The Data Points (Petrol Quality):</strong></p>
+                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#4c5d74' }}>
+                      <li><strong>What they represent:</strong> The floating scatter dots plotted over the graph represent predicted Petrol Quality at those exact same coordinates.</li>
+                      <li><strong>Yellow/Red vs Purple:</strong> The dots use their own color scale (legend on the left). <strong>Yellow dots</strong> indicate exceptional Petrol Quality, <strong>Red/Magenta</strong> is medium, and <strong>Dark Purple</strong> is low.</li>
+                    </ul>
+                    
+                    <p style={{ margin: 0 }}><strong>How to Use This (Trade-off Intelligence):</strong></p>
+                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#4c5d74' }}>
+                      <li>To maximize total yield, hunt for the "Sweet Spot": an area where the <strong>3D mesh peaks (Yellow)</strong> AND the <strong>floating points around it are also Yellow/Red</strong>.</li>
+                      <li>If you tune exclusively for a yellow peak on the mesh, but the dots there are dark purple, it signifies a bad trade-off (great diesel, off-spec petrol).</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1119,6 +1170,11 @@ function App() {
               }}
               style={{ width: "100%", marginBottom: "20px" }}
             />
+            <div className="graph-interpretation" style={{ marginBottom: "20px" }}>
+              <h5>ℹ️ Graph Interpretation</h5>
+              <p><strong>Blue Line (Predicted RUL):</strong> Shows the AI-predicted degradation of the fleet's Remaining Useful Life over the coming days based on dynamic variables like pump load and cooling temperature.</p>
+              <p><strong>Red Dashed Line:</strong> The 72-hour critical alert threshold. An intersection warns of impending mandatory maintenance downtime.</p>
+            </div>
 
             <div className="grid-cards">
             {dynamicMaintenance.assets.map((asset) => (
@@ -1239,6 +1295,11 @@ function App() {
               }}
               style={{ width: "100%", marginBottom: "20px" }}
             />
+            <div className="graph-interpretation" style={{ marginBottom: "20px" }}>
+              <h5>ℹ️ Graph Interpretation</h5>
+              <p><strong>Saffron Line (Surface Temp):</strong> The simulated outer pipe temperature along the benzene transfer line segments.</p>
+              <p><strong>Red Line (Solidification Threshold):</strong> Benzene freezes below 5.5°C. Operators must use steam tracing levers to keep the surface temp above this line to prevent pipeline blockages.</p>
+            </div>
 
             <div className="grid-cards">
               {dynamicBenzene.segments.map((segment) => (
@@ -1332,7 +1393,7 @@ function App() {
                     },
                   },
                 ]}
-                layout={{ height: 350, margin: { t: 40, b: 10, l: 20, r: 20 } }}
+                layout={{ height: 350, margin: { t: 80, b: 20, l: 40, r: 40 } }}
                 style={{ width: "100%" }}
               />
               <Plot
@@ -1347,7 +1408,12 @@ function App() {
                     }
                   }
                 ]}
-                layout={{ title: { text: "Flaring Sources Breakdown" }, height: 350 }}
+                layout={{ 
+                  title: { text: "Flaring Sources Breakdown" }, 
+                  height: 350,
+                  margin: { t: 60, b: 40, l: 20, r: 20 },
+                  legend: { orientation: 'h', y: -0.2 }
+                }}
                 style={{ width: "100%" }}
               />
               <Plot
@@ -1372,6 +1438,12 @@ function App() {
                 layout={{ title: { text: "30-Minute AI Forecast vs Actual" }, height: 350 }}
                 style={{ width: "100%", gridColumn: "span 2" }}
               />
+            </div>
+            <div className="graph-interpretation" style={{ marginBottom: "20px" }}>
+              <h5>ℹ️ Multi-Graph Interpretation</h5>
+              <p><strong>Gauge:</strong> Real-time flaring volume with a red threshold indicating the maximum ESG quota.</p>
+              <p><strong>Pie Chart:</strong> Breakdown of contributing sources causing current flare pressure.</p>
+              <p><strong>30-Minute AI Forecast:</strong> The blue line shows actual history, while the dotted red line projects future flaring given the current simulated surges. Use the recycle valve to bend this forecast safely below limits.</p>
             </div>
             {dynamicFlare.current_flare > flareData.threshold ? (
                 <p className="alert-text">CRITICAL BREACH: Flaring volume has exceeded ESG quota limits!</p>
