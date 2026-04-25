@@ -1378,7 +1378,7 @@ function App() {
               </div>
             </div>
 
-            <div className="two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+            <div className="two-col-grid">
               <Plot
                 data={[
                   {
@@ -1394,6 +1394,7 @@ function App() {
                   },
                 ]}
                 layout={{ height: 350, margin: { t: 80, b: 20, l: 40, r: 40 } }}
+                useResizeHandler={true}
                 style={{ width: "100%" }}
               />
               <Plot
@@ -1414,6 +1415,7 @@ function App() {
                   margin: { t: 60, b: 40, l: 20, r: 20 },
                   legend: { orientation: 'h', y: -0.2 }
                 }}
+                useResizeHandler={true}
                 style={{ width: "100%" }}
               />
               <Plot
@@ -1436,7 +1438,9 @@ function App() {
                   },
                 ]}
                 layout={{ title: { text: "30-Minute AI Forecast vs Actual" }, height: 350 }}
-                style={{ width: "100%", gridColumn: "span 2" }}
+                useResizeHandler={true}
+                className="full-span"
+                style={{ width: "100%" }}
               />
             </div>
             <div className="graph-interpretation" style={{ marginBottom: "20px" }}>

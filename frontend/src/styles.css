@@ -998,3 +998,124 @@ progress.alert::-webkit-progress-value {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+
+/* ========================================================
+   Responsive Mobile Overrides 
+   ======================================================== */
+
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1024px) {
+  .app-shell {
+    grid-template-columns: 240px 1fr;
+  }
+  .kpi-grid, .risk-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    padding: 15px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .sidebar h2, .sidebar .subtitle {
+    width: 100%;
+    margin: 5px 0;
+    text-align: center;
+  }
+  
+  .nav-btn {
+    flex: 1 1 45%;
+    font-size: 13px;
+    text-align: center;
+    margin: 3px;
+  }
+  
+  .download-btn {
+    flex: 1 1 100%;
+    margin-top: 10px;
+  }
+
+  .content {
+    padding: 15px;
+  }
+
+  .psv-grid,
+  .kpi-grid,
+  .batch-summary-grid,
+  .realtime-grid,
+  .metrics-grid,
+  .optimal-metrics,
+  .viz-grid,
+  .grid-cards {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+
+  .risk-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .two-col-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .yield-tabs {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .yield-tabs button {
+    flex: 1 1 45%;
+    text-align: center;
+  }
+  
+  .mini-project-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-btn {
+    flex: 1 1 100%;
+  }
+  .risk-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .yield-tabs button {
+    flex: 1 1 100%;
+  }
+}
+
+/* Ensure Plotly canvases conform strictly to their bounding box limits on mobile */
+.js-plotly-plot {
+  max-width: 100%;
+}
+
+
+/* Fix for Plotly span overflowing the mobile grid */
+.full-span {
+  grid-column: span 2;
+}
+@media (max-width: 768px) {
+  .full-span {
+    grid-column: span 1 !important;
+  }
+}
