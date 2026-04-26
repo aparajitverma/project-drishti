@@ -394,6 +394,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeModule, setActiveModule] = useState<ModuleKey>("Yield Optimizer");
   const [workflowProject, setWorkflowProject] = useState<WorkflowProjectKey | null>(null);
   const [activeYieldTab, setActiveYieldTab] = useState<YieldOptimizerTab>("optimization");
@@ -564,27 +565,41 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <aside className="sidebar">
-        <h2>Project DRISHTI</h2>
-        <p className="subtitle">Digital Refinery Intelligence & Safety Holistic Tracking Initiative</p>
-        {modules.map((module) => (
-          <button
-            type="button"
-            key={module}
-            className={activeModule === module ? "nav-btn active" : "nav-btn"}
-            onClick={() => setActiveModule(module)}
-          >
-            {module}
-          </button>
-        ))}
         <button
-          className="nav-btn logout-btn"
+          className="sidebar-toggle"
           type="button"
-          onClick={() => setIsAuthenticated(false)}
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          Logout
+          {sidebarCollapsed ? '☰' : '←'}
         </button>
+        <div className={`sidebar-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
+          <h2>Project DRISHTI</h2>
+          <p className="subtitle">Digital Refinery Intelligence & Safety Holistic Tracking Initiative</p>
+          {modules.map((module) => (
+            <button
+              type="button"
+              key={module}
+              className={activeModule === module ? "nav-btn active" : "nav-btn"}
+              onClick={() => setActiveModule(module)}
+            >
+              {module}
+            </button>
+          ))}
+          <button
+            className="nav-btn logout-btn"
+            type="button"
+            onClick={() => setIsAuthenticated(false)}
+          >
+            Logout
+          </button>
+        </div>
+        <div className={`sidebar-collapsed-logo ${sidebarCollapsed ? 'visible' : ''}`}>
+          <span className="logo-icon">⚡</span>
+          <span className="logo-text">DRISHTI</span>
+        </div>
       </aside>
       <main className="content">
         {activeModule === "Yield Optimizer" && yieldData && (
