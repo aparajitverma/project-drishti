@@ -7,6 +7,305 @@ const IOCL_SAFFRON = "#FF9933";
 const IOCL_BLUE = "#003366";
 const ALERT_RED = "#D62728";
 
+type WorkflowProjectKey = "yield" | "maintenance" | "benzene" | "flare";
+
+type WorkflowModel = {
+  name: string;
+  type: string;
+  accuracy: number;
+  rmse: number;
+  r2: number;
+  inferenceMs: number;
+  description: string;
+};
+
+type WorkflowSensor = {
+  icon: string;
+  name: string;
+  detail: string;
+};
+
+type WorkflowPipelineStep = {
+  icon: string;
+  label: string;
+  desc: string;
+};
+
+type WorkflowProjectData = {
+  title: string;
+  subtitle: string;
+  pipeline: WorkflowPipelineStep[];
+  sensors: WorkflowSensor[];
+  models: WorkflowModel[];
+  defaultModel: number;
+  confidenceDesc: string;
+};
+
+const WORKFLOW_DATA: Record<WorkflowProjectKey, WorkflowProjectData> = {
+  yield: {
+    title: "Yield Optimizer — AI/ML (Artificial Intelligence / Machine Learning) Workflow",
+    subtitle: "Soft-Sensor Ensemble Pipeline for Real-Time Blend Quality Prediction",
+    pipeline: [
+      { icon: "📡", label: "Data Ingestion", desc: "Live DCS (Distributed Control System) feeds from furnace, column, and flow sensors at 1-second intervals" },
+      { icon: "🔧", label: "Preprocessing", desc: "Outlier removal, normalization, lag-feature engineering on 24h rolling windows" },
+      { icon: "🧠", label: "Model Training", desc: "Ensemble of XGBoost (eXtreme Gradient Boosting) + LSTM (Long Short-Term Memory) trained on 6 months of historical lab-validated data" },
+      { icon: "⚡", label: "Inference", desc: "Real-time quality prediction every 60s with confidence scoring" },
+      { icon: "📊", label: "Output & Action", desc: "Predicted yield quality index fed to APC (Advanced Process Control) for closed-loop furnace optimization" },
+    ],
+    sensors: [
+      { icon: "🌡️", name: "Furnace Outlet Temperature", detail: "TI-101 | Range: 310–350°C | Update: 1s" },
+      { icon: "⚖️", name: "Column Pressure", detail: "PI-201 | Range: 4.0–5.5 bar | Update: 1s" },
+      { icon: "🔄", name: "Reflux Ratio", detail: "FRC-301 | Range: 1.8–3.2 | Update: 5s" },
+      { icon: "💧", name: "Feed Flow Rate", detail: "FI-401 | Range: 750–950 m³/h | Update: 1s" },
+      { icon: "🧪", name: "Diesel Lab Sample", detail: "LAB-D | Frequency: Every 4 hours" },
+      { icon: "🧪", name: "Petrol Lab Sample", detail: "LAB-P | Frequency: Every 4 hours" },
+    ],
+    models: [
+      { name: "XGBoost (eXtreme Gradient Boosting) Ensemble", type: "Gradient Boosting", accuracy: 94.2, rmse: 0.38, r2: 0.93, inferenceMs: 12, description: "Best balance of accuracy and speed for tabular process data" },
+      { name: "LSTM (Long Short-Term Memory) Autoencoder", type: "Deep Learning", accuracy: 93.8, rmse: 0.41, r2: 0.91, inferenceMs: 45, description: "Captures temporal dependencies in sequential furnace cycles" },
+      { name: "Random Forest", type: "Ensemble Trees", accuracy: 92.1, rmse: 0.47, r2: 0.89, inferenceMs: 8, description: "Fast, interpretable model for baseline quality estimation" },
+      { name: "Ridge Regression", type: "Linear Model", accuracy: 88.5, rmse: 0.62, r2: 0.84, inferenceMs: 3, description: "Lightweight linear baseline for comparison and drift detection" },
+    ],
+    defaultModel: 0,
+    confidenceDesc: "Based on 6-month rolling validation against lab results. Confidence recalibrated weekly.",
+  },
+  maintenance: {
+    title: "Predictive Maintenance — AI/ML Workflow",
+    subtitle: "Equipment Degradation & RUL (Remaining Useful Life) Prediction Pipeline",
+    pipeline: [
+      { icon: "📡", label: "Sensor Fusion", desc: "Vibration, temperature, current, and pressure sensors sampled at 500 Hz" },
+      { icon: "🔧", label: "Feature Extraction", desc: "FFT (Fast Fourier Transform) decomposition, statistical aggregation, rolling kurtosis & RMS (Root Mean Square)" },
+      { icon: "🧠", label: "Anomaly Detection", desc: "Isolation Forest flags regime changes; LSTM (Long Short-Term Memory) predicts RUL trajectory" },
+      { icon: "⚡", label: "Risk Scoring", desc: "Multi-model voting produces risk scores updated every 15 minutes" },
+      { icon: "🛡️", label: "Alert & Schedule", desc: "Proactive maintenance orders triggered 48h before predicted failure" },
+    ],
+    sensors: [
+      { icon: "📳", name: "Vibration Accelerometer", detail: "VIB-P101 | Axis: Tri-axial | Sampling: 500 Hz" },
+      { icon: "🌡️", name: "Bearing Temperature", detail: "TI-P102 | Range: 40–120°C | Update: 5s" },
+      { icon: "⚡", name: "Motor Current Draw", detail: "II-P103 | Range: 0–200 A | Update: 1s" },
+      { icon: "💨", name: "Pump Discharge Pressure", detail: "PI-P104 | Range: 5–12 bar | Update: 1s" },
+      { icon: "🔊", name: "Acoustic Emission", detail: "AE-C12 | Frequency: 100 kHz–1 MHz" },
+      { icon: "🧲", name: "Oil Debris Monitor", detail: "OD-P105 | Particle count per cycle" },
+    ],
+    models: [
+      { name: "LSTM (Long Short-Term Memory) Time-Series", type: "RNN (Recurrent Neural Network)", accuracy: 95.1, rmse: 18.2, r2: 0.94, inferenceMs: 38, description: "Best at capturing long-term degradation trends from vibration sequences" },
+      { name: "Isolation Forest", type: "Anomaly Detection", accuracy: 91.3, rmse: 28.5, r2: 0.87, inferenceMs: 5, description: "Unsupervised anomaly scoring for detecting novel failure modes" },
+      { name: "XGBoost (eXtreme Gradient Boosting) Classifier", type: "Gradient Boosting", accuracy: 93.7, rmse: 21.0, r2: 0.92, inferenceMs: 10, description: "Fast multi-class failure mode classification from extracted features" },
+      { name: "1D-CNN (Convolutional Neural Network)", type: "Convolutional Network", accuracy: 94.5, rmse: 19.8, r2: 0.93, inferenceMs: 22, description: "Raw signal pattern recognition for early fault signature detection" },
+    ],
+    defaultModel: 0,
+    confidenceDesc: "Validated against 2 years of maintenance logs covering 47 recorded failure events.",
+  },
+  benzene: {
+    title: "Benzene Safety — AI/ML Workflow",
+    subtitle: "Winterization Risk Prediction & Steam Routing Pipeline",
+    pipeline: [
+      { icon: "🌤️", label: "Weather Ingest", desc: "Real-time IMD (India Meteorological Department) weather feeds, on-site ambient probes, wind chill calculations" },
+      { icon: "🔧", label: "Thermal Modeling", desc: "Physics-informed feature engineering: insulation factor, sun exposure, pipe diameter" },
+      { icon: "🧠", label: "Regression", desc: "Gradient Boosted Regressor predicts surface temp 6h ahead per segment" },
+      { icon: "⚡", label: "Risk Mapping", desc: "Segment-level freeze probability mapped against 5.5°C solidification threshold" },
+      { icon: "♨️", label: "Steam Routing", desc: "Automated steam-tracing activation commands sent to at-risk segments" },
+    ],
+    sensors: [
+      { icon: "🌡️", name: "Surface Temperature Probe", detail: "TE-B1xx | 12 segments | Update: 30s" },
+      { icon: "🌤️", name: "Ambient Temperature", detail: "AT-MET01 | Range: -10 to 50°C | Update: 60s" },
+      { icon: "💨", name: "Wind Speed & Direction", detail: "WS-MET02 | Anemometer | Update: 60s" },
+      { icon: "♨️", name: "Steam Flow Meter", detail: "FI-STM01 | Range: 0–100% | Update: 5s" },
+      { icon: "📏", name: "Pipe Insulation Sensor", detail: "INS-B1xx | Thermal conductivity | Static" },
+      { icon: "☁️", name: "Cloud Cover / Solar", detail: "SOL-MET03 | W/m² | Update: 300s" },
+    ],
+    models: [
+      { name: "Gradient Boosted Regressor", type: "Ensemble Trees", accuracy: 93.8, rmse: 0.72, r2: 0.92, inferenceMs: 8, description: "Best overall accuracy for surface temperature prediction" },
+      { name: "ARIMA (AutoRegressive Integrated Moving Average) Weather Model", type: "Statistical", accuracy: 89.2, rmse: 1.15, r2: 0.85, inferenceMs: 2, description: "Classical time-series model for ambient temperature trend" },
+      { name: "Random Forest", type: "Ensemble Trees", accuracy: 91.5, rmse: 0.89, r2: 0.89, inferenceMs: 6, description: "Robust general-purpose model with good interpretability" },
+      { name: "SVR (Support Vector Regression) with RBF (Radial Basis Function) Kernel", type: "Support Vector", accuracy: 90.1, rmse: 0.98, r2: 0.87, inferenceMs: 15, description: "Non-linear regression effective for small segment datasets" },
+    ],
+    defaultModel: 0,
+    confidenceDesc: "Calibrated on 3 winter seasons of pipeline temperature data across all 12 segments.",
+  },
+  flare: {
+    title: "Flare & ESG (Environmental, Social, and Governance) Tracker — AI/ML Workflow",
+    subtitle: "Predictive Flare Surge Forecasting & Gas Recovery Pipeline",
+    pipeline: [
+      { icon: "📡", label: "Pressure Ingest", desc: "Upstream pressure, drum level, and compressor discharge at 1s intervals" },
+      { icon: "🔧", label: "Signal Processing", desc: "Rolling Z-score, derivative features, pressure ramp-rate calculation" },
+      { icon: "🧠", label: "Forecasting", desc: "Prophet + LSTM (Long Short-Term Memory) ensemble produces 30-minute flare volume forecast" },
+      { icon: "⚡", label: "Threshold Check", desc: "Predicted volume compared against ESG regulatory limits in real time" },
+      { icon: "🔁", label: "Compressor Action", desc: "Automated recycle valve opening to redirect gas and reduce flaring" },
+    ],
+    sensors: [
+      { icon: "⚖️", name: "Upstream Pressure Gauge", detail: "PI-FL01 | Range: 3.0–7.0 bar | Update: 1s" },
+      { icon: "🔥", name: "Flare Flow Meter", detail: "FI-FL02 | Range: 0–500 kg/h | Update: 1s" },
+      { icon: "💨", name: "Compressor Discharge", detail: "PI-C07 | Range: 8–15 bar | Update: 1s" },
+      { icon: "📏", name: "Drum Level Sensor", detail: "LI-FL03 | Range: 0–100% | Update: 5s" },
+      { icon: "🌡️", name: "Flare Tip Temperature", detail: "TI-FL04 | Range: 200–1200°C | Update: 10s" },
+      { icon: "📊", name: "Gas Composition Analyzer", detail: "AI-FL05 | CH₄ (Methane), H₂S (Hydrogen Sulfide), CO₂ (Carbon Dioxide) | Update: 60s" },
+    ],
+    models: [
+      { name: "Prophet Forecasting", type: "Additive Model", accuracy: 92.5, rmse: 8.3, r2: 0.91, inferenceMs: 18, description: "Best for capturing daily/weekly flaring seasonality patterns" },
+      { name: "LSTM (Long Short-Term Memory) Sequence", type: "Deep Learning", accuracy: 94.1, rmse: 6.9, r2: 0.93, inferenceMs: 42, description: "Excels at rapid pressure surge prediction from sequential data" },
+      { name: "XGBoost (eXtreme Gradient Boosting) Regressor", type: "Gradient Boosting", accuracy: 91.8, rmse: 9.1, r2: 0.89, inferenceMs: 7, description: "Fast, reliable model using engineered pressure-derivative features" },
+      { name: "ARIMA (AutoRegressive Integrated Moving Average)", type: "Statistical", accuracy: 87.3, rmse: 12.4, r2: 0.82, inferenceMs: 3, description: "Simple statistical baseline for trend-following forecast" },
+    ],
+    defaultModel: 1,
+    confidenceDesc: "Validated against 12 months of actual flare events, including 23 surge incidents.",
+  },
+};
+
+const AiWorkflowModal = ({
+  projectKey,
+  onClose,
+}: {
+  projectKey: WorkflowProjectKey;
+  onClose: () => void;
+}) => {
+  const data = WORKFLOW_DATA[projectKey];
+  const [selectedModel, setSelectedModel] = useState(data.defaultModel);
+
+  const activeModel = data.models[selectedModel];
+
+  return (
+    <div className="workflow-overlay" onClick={onClose}>
+      <div className="workflow-modal" onClick={e => e.stopPropagation()}>
+        <div className="workflow-modal-header">
+          <div>
+            <h2>{data.title}</h2>
+            <p className="modal-subtitle">{data.subtitle}</p>
+          </div>
+          <button className="workflow-close-btn" onClick={onClose} type="button">✕</button>
+        </div>
+
+        <div className="workflow-modal-body">
+          {/* ── Pipeline Flow ── */}
+          <div>
+            <h4 className="wf-section-title">AI/ML Pipeline Flow</h4>
+            <div className="pipeline-steps">
+              {data.pipeline.map((step, i) => (
+                <>
+                  <div className="pipeline-step" key={step.label}>
+                    <span className="step-icon">{step.icon}</span>
+                    <span className="step-label">{step.label}</span>
+                    <span className="step-desc">{step.desc}</span>
+                  </div>
+                  {i < data.pipeline.length - 1 && (
+                    <span className="pipeline-arrow" key={`arrow-${step.label}`}>→</span>
+                  )}
+                </>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Data Sensors & Sources ── */}
+          <div>
+            <h4 className="wf-section-title">Data Sensors & Sources</h4>
+            <div className="sensor-source-grid">
+              {data.sensors.map(s => (
+                <div className="sensor-source-card" key={s.name}>
+                  <span className="sensor-icon">{s.icon}</span>
+                  <div className="sensor-info">
+                    <span className="sensor-name">{s.name}</span>
+                    <span className="sensor-detail">{s.detail}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Model Comparison ── */}
+          <div>
+            <h4 className="wf-section-title">Model Performance Comparison</h4>
+            <div className="model-table-wrapper">
+              <table className="model-comparison-table">
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>Type</th>
+                    <th>Accuracy (%)</th>
+                    <th>RMSE</th>
+                    <th>R²</th>
+                    <th>Inference (ms)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.models.map((m, i) => {
+                    const bestAccuracy = Math.max(...data.models.map(x => x.accuracy));
+                    const bestRmse = Math.min(...data.models.map(x => x.rmse));
+                    const bestR2 = Math.max(...data.models.map(x => x.r2));
+                    const bestInference = Math.min(...data.models.map(x => x.inferenceMs));
+                    return (
+                      <tr key={m.name} style={i === selectedModel ? { background: "#fff9f2" } : undefined}>
+                        <td><strong>{m.name}</strong></td>
+                        <td>{m.type}</td>
+                        <td className={m.accuracy === bestAccuracy ? "best-value" : ""}>{m.accuracy}%</td>
+                        <td className={m.rmse === bestRmse ? "best-value" : ""}>{m.rmse}</td>
+                        <td className={m.r2 === bestR2 ? "best-value" : ""}>{m.r2}</td>
+                        <td className={m.inferenceMs === bestInference ? "best-value" : ""}>{m.inferenceMs} ms</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── Admin Model Selection ── */}
+          <div>
+            <h4 className="wf-section-title">Select Active Model</h4>
+            <div className="model-cards-grid">
+              {data.models.map((m, i) => (
+                <div
+                  key={m.name}
+                  className={`model-select-card ${i === selectedModel ? "selected" : ""}`}
+                  onClick={() => setSelectedModel(i)}
+                >
+                  <div className="model-name">{m.name}</div>
+                  <div className="model-type">{m.type}</div>
+                  <div className="model-stats">
+                    <div className="model-stat">
+                      <span>Accuracy</span>
+                      <span>{m.accuracy}%</span>
+                    </div>
+                    <div className="model-stat">
+                      <span>RMSE</span>
+                      <span>{m.rmse}</span>
+                    </div>
+                    <div className="model-stat">
+                      <span>R²</span>
+                      <span>{m.r2}</span>
+                    </div>
+                    <div className="model-stat">
+                      <span>Inference</span>
+                      <span>{m.inferenceMs} ms</span>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: "13px", color: "#42536b", marginTop: "8px", marginBottom: 0, lineHeight: 1.35 }}>
+                    {m.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Prediction Confidence ── */}
+          <div className="confidence-section">
+            <div className="confidence-header">
+              <span className="conf-label">Selected Model: {activeModel.name}</span>
+              <span className="conf-value">{activeModel.accuracy}%</span>
+            </div>
+            <div className="confidence-bar-track">
+              <div
+                className="confidence-bar-fill"
+                style={{ width: `${activeModel.accuracy}%` }}
+              />
+            </div>
+            <p className="confidence-desc">{data.confidenceDesc}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 type ModuleKey =
   | "Yield Optimizer"
   | "Predictive Maintenance"
@@ -94,6 +393,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeModule, setActiveModule] = useState<ModuleKey>("Yield Optimizer");
+  const [workflowProject, setWorkflowProject] = useState<WorkflowProjectKey | null>(null);
   const [activeYieldTab, setActiveYieldTab] = useState<YieldOptimizerTab>("optimization");
   const [yieldData, setYieldData] = useState<YieldResponse | null>(null);
   const [batchData, setBatchData] = useState<BatchComparisonResponse | null>(null);
@@ -338,6 +638,9 @@ function App() {
                   <div className="psv-card ai-impact">
                     <h4>AI/ML Impact</h4>
                     <p>{yieldData.problem_solution_value.ml_usecase}</p>
+                    <span className="view-workflow-link" onClick={() => setWorkflowProject("yield")}>
+                      View Workflow <span className="arrow">→</span>
+                    </span>
                   </div>
                 </div>
 
@@ -1159,6 +1462,9 @@ function App() {
               <div className="psv-card value">
                 <h4>ML / AI Impact</h4>
                 <p>{maintenanceData.problem_solution_value.ml_usecase}</p>
+                <span className="view-workflow-link" onClick={() => setWorkflowProject("maintenance")}>
+                  View Workflow <span className="arrow">→</span>
+                </span>
               </div>
             </div>
 
@@ -1276,6 +1582,9 @@ function App() {
               <div className="psv-card value">
                 <h4>ML / AI Impact</h4>
                 <p>{benzeneData.problem_solution_value.ml_usecase}</p>
+                <span className="view-workflow-link" onClick={() => setWorkflowProject("benzene")}>
+                  View Workflow <span className="arrow">→</span>
+                </span>
               </div>
             </div>
 
@@ -1396,6 +1705,9 @@ function App() {
               <div className="psv-card value">
                 <h4>ML / AI Impact</h4>
                 <p>{flareData.problem_solution_value.ml_usecase}</p>
+                <span className="view-workflow-link" onClick={() => setWorkflowProject("flare")}>
+                  View Workflow <span className="arrow">→</span>
+                </span>
               </div>
             </div>
 
@@ -1514,6 +1826,12 @@ function App() {
           </section>
         )}
       </main>
+      {workflowProject && (
+        <AiWorkflowModal
+          projectKey={workflowProject}
+          onClose={() => setWorkflowProject(null)}
+        />
+      )}
     </div>
   );
 }

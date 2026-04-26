@@ -1164,9 +1164,12 @@ progress.alert::-webkit-progress-value {
 
 .login-box h3 {
   font-size: 22px;
-  color: #a0aec0;
+  color: #ff9933;
   margin-bottom: 20px;
   font-weight: 500;
+  border: none;
+  padding-left: 0;
+  border-left: none;
 }
 
 .login-desc {
@@ -1245,4 +1248,450 @@ progress.alert::-webkit-progress-value {
 .logout-btn:hover {
   background-color: rgba(255, 107, 107, 0.1);
   color: #ff8787;
+}
+
+/* ── AI/ML Workflow Link in PSV Card ── */
+
+.view-workflow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: #003366;
+  font-weight: 700;
+  font-size: 17px;
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.view-workflow-link:hover {
+  color: #ff9933;
+  border-bottom-color: #ff9933;
+}
+
+.view-workflow-link .arrow {
+  font-size: 20px;
+  transition: transform 0.25s ease;
+}
+
+.view-workflow-link:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* ── Workflow Modal Overlay ── */
+
+.workflow-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Workflow Modal Container ── */
+
+.workflow-modal {
+  background: #f6f8fb;
+  border-radius: 16px;
+  width: 92vw;
+  max-width: 1100px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.workflow-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid #d8e0ea;
+  background: #003366;
+  border-radius: 16px 16px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.workflow-modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #fff;
+}
+
+.workflow-modal-header .modal-subtitle {
+  font-size: 16px;
+  color: #ff9933;
+  margin: 4px 0 0;
+  font-weight: 500;
+}
+
+.workflow-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.workflow-close-btn:hover {
+  background: rgba(255, 107, 107, 0.3);
+  border-color: #ff6b6b;
+}
+
+.workflow-modal-body {
+  padding: 24px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Section Titles ── */
+
+.wf-section-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #003366;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #ff9933;
+  display: inline-block;
+}
+
+/* ── Pipeline Steps ── */
+
+.pipeline-steps {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  overflow-x: auto;
+  padding: 8px 0 12px;
+}
+
+.pipeline-step {
+  flex: 1;
+  min-width: 140px;
+  background: #fff;
+  border: 1px solid #d8e0ea;
+  border-radius: 10px;
+  padding: 14px 12px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pipeline-step:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 51, 102, 0.12);
+}
+
+.pipeline-step .step-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.pipeline-step .step-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #003366;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.pipeline-step .step-desc {
+  font-size: 13.5px;
+  color: #42536b;
+  line-height: 1.35;
+}
+
+.pipeline-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  font-size: 22px;
+  color: #ff9933;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Sensor Grid ── */
+
+.sensor-source-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.sensor-source-card {
+  background: #fff;
+  border: 1px solid #d8e0ea;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transition: border-color 0.2s;
+}
+
+.sensor-source-card:hover {
+  border-color: #003366;
+}
+
+.sensor-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.sensor-info .sensor-name {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #003366;
+  display: block;
+}
+
+.sensor-info .sensor-detail {
+  font-size: 14px;
+  color: #42536b;
+  margin-top: 2px;
+  display: block;
+}
+
+/* ── Model Comparison Table ── */
+
+.model-table-wrapper {
+  overflow-x: auto;
+}
+
+.model-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15.5px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #d8e0ea;
+}
+
+.model-comparison-table thead {
+  background: #003366;
+  color: #fff;
+}
+
+.model-comparison-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 14.5px;
+  white-space: nowrap;
+}
+
+.model-comparison-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e7edf5;
+  color: #14243d;
+}
+
+.model-comparison-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.model-comparison-table tbody tr:hover {
+  background: #f0f4f8;
+}
+
+.model-comparison-table .best-value {
+  color: #22a06b;
+  font-weight: 700;
+}
+
+/* ── Model Selection Cards ── */
+
+.model-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.model-select-card {
+  background: #fff;
+  border: 2px solid #d8e0ea;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.model-select-card:hover {
+  border-color: #003366;
+  box-shadow: 0 4px 14px rgba(0, 51, 102, 0.1);
+}
+
+.model-select-card.selected {
+  border-color: #ff9933;
+  background: #fff9f2;
+  box-shadow: 0 4px 18px rgba(255, 153, 51, 0.2);
+}
+
+.model-select-card.selected::after {
+  content: "✓ Active";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: #ff9933;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.model-select-card .model-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #003366;
+  margin-bottom: 6px;
+}
+
+.model-select-card .model-type {
+  font-size: 13.5px;
+  color: #42536b;
+  margin-bottom: 10px;
+}
+
+.model-select-card .model-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.model-select-card .model-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.model-select-card .model-stat span:first-child {
+  color: #42536b;
+}
+
+.model-select-card .model-stat span:last-child {
+  font-weight: 700;
+  color: #003366;
+}
+
+/* ── Confidence Bar ── */
+
+.confidence-section {
+  background: #fff;
+  border: 1px solid #d8e0ea;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.confidence-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.confidence-header .conf-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #003366;
+}
+
+.confidence-header .conf-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #22a06b;
+}
+
+.confidence-bar-track {
+  height: 14px;
+  background: #e7edf5;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.confidence-bar-fill {
+  height: 100%;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #ff9933, #22a06b);
+  transition: width 0.5s ease;
+}
+
+.confidence-desc {
+  font-size: 14px;
+  color: #42536b;
+  margin-top: 8px;
+}
+
+/* ── Workflow Modal Responsive ── */
+
+@media (max-width: 768px) {
+  .workflow-modal {
+    width: 98vw;
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+
+  .workflow-modal-header {
+    padding: 16px 18px 12px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .workflow-modal-header h2 {
+    font-size: 20px;
+  }
+
+  .workflow-modal-body {
+    padding: 16px 18px 20px;
+    gap: 18px;
+  }
+
+  .pipeline-steps {
+    flex-direction: column;
+  }
+
+  .pipeline-arrow {
+    justify-content: center;
+    transform: rotate(90deg);
+    padding: 2px 0;
+  }
+
+  .model-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-source-grid {
+    grid-template-columns: 1fr;
+  }
 }
