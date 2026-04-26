@@ -7,7 +7,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 10000
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.4"
@@ -21,7 +21,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://drishti-api.onrender.com
+        value: https://drishti-api-w13d.onrender.com
     routes:
       - type: rewrite
         source: /*
