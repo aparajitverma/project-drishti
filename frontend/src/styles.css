@@ -1170,7 +1170,28 @@ progress.alert::-webkit-progress-value {
 
   .login-container {
     flex-direction: column;
-    padding: 20px 0;
+    padding: 20px 15px;
+    justify-content: flex-start;
+    min-height: auto;
+    gap: 20px;
+  }
+
+  .login-box {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    order: 1;
+  }
+
+  .login-box button[type="submit"] {
+    margin-bottom: 10px;
+  }
+
+  .powered-by {
+    position: relative;
+    order: 2;
+    margin-top: 10px;
+    margin-bottom: 20px;
   }
 
   /* Fix 3D topology graph on mobile */
