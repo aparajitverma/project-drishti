@@ -289,7 +289,7 @@ function App() {
           <section>
             <h3>Yield Optimizer</h3>
             <div className="mini-project-banner">
-              <span>Mini Project #1</span>
+              <span>Project #1</span>
               <strong>AI Yield Optimization Cockpit</strong>
             </div>
 
@@ -593,7 +593,7 @@ function App() {
               <div>
                 <h4>Batch Comparison Analysis</h4>
                 <div className="mini-project-banner">
-                  <span>Mini Project #2</span>
+                  <span>Project #2</span>
                   <strong>Historical Batch Performance Intelligence</strong>
                 </div>
 
@@ -744,7 +744,7 @@ function App() {
               <div>
                 <h4>Real-time Monitoring Dashboard</h4>
                 <div className="mini-project-banner">
-                  <span>Mini Project #3</span>
+                  <span>Project #3</span>
                   <strong>Live Operations Intelligence Center</strong>
                 </div>
 
@@ -884,7 +884,7 @@ function App() {
               <div>
                 <h4>Advanced Visualization Analytics</h4>
                 <div className="mini-project-banner">
-                  <span>Mini Project #4</span>
+                  <span>Project #4</span>
                   <strong>Multi-Dimensional Optimization Intelligence</strong>
                 </div>
 
@@ -1139,7 +1139,7 @@ function App() {
           <section>
             <h3>Predictive Maintenance</h3>
             <div className="mini-project-banner">
-              <span>Mini Project #5</span>
+              <span>Project #5</span>
               <strong>AI Equipment Reliability Center</strong>
             </div>
 
@@ -1256,7 +1256,7 @@ function App() {
           <section>
             <h3>Benzene Safety (Winterization)</h3>
             <div className="mini-project-banner">
-              <span>Mini Project #6</span>
+              <span>Project #6</span>
               <strong>Predictive Winterization Guard</strong>
             </div>
 
@@ -1376,7 +1376,7 @@ function App() {
           <section>
             <h3>Flare & ESG Tracker</h3>
             <div className="mini-project-banner">
-              <span>Mini Project #7</span>
+              <span>Project #7</span>
               <strong>AI ESG Conformance Guardian</strong>
             </div>
 
