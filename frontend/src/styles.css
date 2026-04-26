@@ -1345,7 +1345,7 @@ progress.alert::-webkit-progress-value {
 .powered-by {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: flex-end;
   gap: 12px;
   font-size: 18px;
   color: rgba(255, 255, 255, 0.8);
