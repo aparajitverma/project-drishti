@@ -1248,15 +1248,21 @@ progress.alert::-webkit-progress-value {
 
 
 /* ================== LOGIN SCREEN ================== */
-.login-container {
+.login-wrapper {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #14243d 0%, #003366 100%);
+  font-family: 'Inter', sans-serif;
+  color: white;
+}
+
+.login-container {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #14243d 0%, #003366 100%);
-  position: relative;
-  font-family: 'Inter', sans-serif;
-  color: white;
+  padding: 40px 20px;
 }
 
 .login-box {
@@ -1337,35 +1343,25 @@ progress.alert::-webkit-progress-value {
 }
 
 .powered-by {
-  position: absolute;
-  bottom: 40px;
-  right: 40px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 22px;
-  color: rgba(255, 255, 255, 0.7);
+  justify-content: flex-start;
+  gap: 12px;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 15px 40px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.powered-by span {
+  order: 1;
 }
 
 .powered-by img {
-  height: 100px;
+  height: 50px;
   opacity: 0.9;
+  order: 2;
 }
-
-
-.logout-btn {
-  margin-top: auto;
-  background-color: transparent;
-  color: #ff6b6b;
-  border: 1px solid rgba(255, 107, 107, 0.3);
-}
-
-.logout-btn:hover {
-  background-color: rgba(255, 107, 107, 0.1);
-  color: #ff8787;
-}
-
-/* ── AI/ML Workflow Link in PSV Card ── */
 
 .view-workflow-link {
   display: inline-flex;

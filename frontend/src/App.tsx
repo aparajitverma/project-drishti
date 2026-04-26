@@ -357,30 +357,32 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h1>Project DRISHTI</h1>
-        <h3>Digital Refinery Intelligence & Safety Holistic Tracking Initiative</h3>
-        <p className="login-desc">
-          An advanced AI/ML-driven full-stack simulation dashboard designed to provide actionable intelligence, optimize process yield, enforce process safety, and track Environmental, Social, and Governance (ESG) compliance.
-        </p>
+    <div className="login-wrapper">
+      <div className="login-container">
+        <div className="login-box">
+          <h1>Project DRISHTI</h1>
+          <h3>Digital Refinery Intelligence & Safety Holistic Tracking Initiative</h3>
+          <p className="login-desc">
+            An advanced AI/ML-driven full-stack simulation dashboard designed to provide actionable intelligence, optimize process yield, enforce process safety, and track Environmental, Social, and Governance (ESG) compliance.
+          </p>
 
-        <form onSubmit={handleLogin}>
-          <input
-            type="text"
-            placeholder="Admin ID"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-          {error && <p className="error-text">{error}</p>}
-          <button type="submit">Initialize System</button>
-        </form>
+          <form onSubmit={handleLogin}>
+            <input
+              type="text"
+              placeholder="Admin ID"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+            />
+            {error && <p className="error-text">{error}</p>}
+            <button type="submit">Initialize System</button>
+          </form>
+        </div>
       </div>
       <div className="powered-by">
         <span>Powered by:</span>
