@@ -1302,19 +1302,19 @@ function App() {
                         }
                       ]}
                       layout={{
-                        title: { text: "Advanced Quality Topology", font: { color: "#003366", family: "Inter", size: 18 } },
-                        font: { color: "#1a202c", family: "Inter" },
+                        title: { text: "Advanced Quality Topology", font: { color: "#003366", family: "Inter", size: 16 } },
+                        font: { color: "#1a202c", family: "Inter", size: 11 },
                         scene: {
-                          xaxis: { title: { text: "Furnace Temp (°C)" } },
-                          yaxis: { title: { text: "Pressure (bar)" } },
-                          zaxis: { title: { text: "Quality Index" } },
+                          xaxis: { title: { text: "Furnace Temp (°C)", font: { size: 10 } }, tickfont: { size: 9 } },
+                          yaxis: { title: { text: "Pressure (bar)", font: { size: 10 } }, tickfont: { size: 9 } },
+                          zaxis: { title: { text: "Quality", font: { size: 10 } }, tickfont: { size: 9 } },
                           camera: {
                             eye: { x: 1.6, y: 1.6, z: 1.2 }
                           }
                         },
-                        margin: { l: 20, r: 150, b: 20, t: 50 },
-                        legend: { title: { text: 'Key' }, x: 1.05, y: 0.6 },
-                        height: 550,
+                        margin: { l: 10, r: 10, b: 10, t: 40 },
+                        legend: { title: { text: 'Key', font: { size: 10 } }, x: 0.02, y: 0.98, xanchor: 'left', yanchor: 'top', font: { size: 9 } },
+                        autosize: true,
                         dragmode: "turntable",
                         modebar: {
                           remove: ['select2d', 'lasso2d']

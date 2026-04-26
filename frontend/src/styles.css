@@ -1103,6 +1103,9 @@ progress.alert::-webkit-progress-value {
 @media (max-width: 480px) {
   .nav-btn {
     flex: 1 1 100%;
+    font-size: 14px;
+    padding: 8px 12px;
+    min-height: 36px;
   }
 
   .risk-grid {
@@ -1111,6 +1114,97 @@ progress.alert::-webkit-progress-value {
 
   .yield-tabs button {
     flex: 1 1 100%;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  /* Compact sidebar for mobile */
+  .sidebar {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .sidebar h2 {
+    font-size: 18px;
+    margin: 0 0 4px 0;
+  }
+
+  .sidebar .subtitle {
+    font-size: 11px;
+    margin: 0 0 8px 0;
+  }
+
+  /* Fix powered-by overlap on login screen */
+  .powered-by {
+    position: static;
+    bottom: auto;
+    right: auto;
+    margin-top: 20px;
+    font-size: 14px;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .powered-by img {
+    height: 40px;
+  }
+
+  .login-box {
+    padding: 20px;
+    margin: 10px;
+    max-width: 100%;
+  }
+
+  .login-box h1 {
+    font-size: 28px;
+  }
+
+  .login-box h3 {
+    font-size: 16px;
+  }
+
+  .login-box button {
+    font-size: 18px;
+    padding: 12px;
+  }
+
+  .login-container {
+    flex-direction: column;
+    padding: 20px 0;
+  }
+
+  /* Fix 3D topology graph on mobile */
+  .viz-card .js-plotly-plot .plot-container {
+    height: 300px !important;
+  }
+
+  .viz-card .js-plotly-plot {
+    height: 300px !important;
+  }
+
+  .viz-card {
+    padding: 8px;
+    overflow: hidden;
+  }
+
+  .viz-card h4 {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  .graph-interpretation {
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  .graph-interpretation h5 {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  /* Hide colorbar titles on mobile to save space */
+  .colorbar-title {
+    font-size: 9px !important;
   }
 }
 
